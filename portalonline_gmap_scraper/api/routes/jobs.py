@@ -30,11 +30,11 @@ async def create_job_route(
     """POST /api/v1/jobs - Submit scraping job."""
     manager = get_job_manager(request)
     result = await manager.submit(request.state.user_id, body.model_dump())
-    if isinstance(result, dict) and "error" in result:
+    if isinstance(result, dict) and "_duplicate" in result:
         raise HTTPException(
             status_code=409,
             detail={
-                "code": result["error"],
+                "code": "DUPLICATE_JOB",
                 "message": "Duplicate job exists",
                 "existing_job_id": result.get("existing_job_id"),
             },

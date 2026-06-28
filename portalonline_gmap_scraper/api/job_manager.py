@@ -47,7 +47,7 @@ class JobManager:
 
         existing = await self._check_duplicate(user_id, keyword, location)
         if existing:
-            return {"error": "DUPLICATE_JOB", "existing_job_id": existing["job_id"]}
+            return {"_duplicate": True, "existing_job_id": existing["job_id"]}
 
         has_active = self._active_job_id is not None
         queue_pos = await get_queue_position(self.db) if has_active else None

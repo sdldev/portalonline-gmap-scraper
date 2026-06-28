@@ -45,7 +45,7 @@ class TestJobManagerSubmit:
         result = await manager.submit(user["user_id"], {
             "keyword": "same", "location": "same",
         })
-        assert "error" in result
+        assert "_duplicate" in result
 
     async def test_cancel_job(self, db, manager):
         user = await create_user(db, "canceluser")
