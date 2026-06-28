@@ -7,7 +7,7 @@ from typing import Any
 import aiosqlite
 from fastapi import Depends, HTTPException, Request
 
-from ..store import create_user, get_user_by_api_key
+from api.store import create_user, get_user_by_api_key
 
 logger = logging.getLogger(__name__)
 
@@ -44,8 +44,8 @@ async def require_admin(
     db: aiosqlite.Connection = Depends(get_db),
 ) -> dict[str, Any]:
     """Require admin role. Tries JWT Bearer token first, falls back to X-API-Key."""
-    from ..auth_utils import verify_token
-    from ..store import get_user_by_id
+    from api.auth_utils import verify_token
+    from api.store import get_user_by_id
 
     auth_header = request.headers.get("Authorization", "")
     api_key = request.headers.get("X-API-Key")
@@ -78,8 +78,8 @@ async def require_user(
     db: aiosqlite.Connection = Depends(get_db),
 ) -> dict[str, Any]:
     """Require authenticated user (any role). Tries JWT first, then API key."""
-    from ..auth_utils import verify_token
-    from ..store import get_user_by_id
+    from api.auth_utils import verify_token
+    from api.store import get_user_by_id
 
     auth_header = request.headers.get("Authorization", "")
     api_key = request.headers.get("X-API-Key")
@@ -142,8 +142,8 @@ async def verify_jwt_token(
     db: aiosqlite.Connection = Depends(get_db),
 ) -> dict[str, Any]:
     """Extract Authorization: Bearer <token>, verify JWT, attach to request state."""
-    from ..auth_utils import verify_token
-    from ..store import get_user_by_id
+    from api.auth_utils import verify_token
+    from api.store import get_user_by_id
 
     auth_header = request.headers.get("Authorization", "")
     if not auth_header.startswith("Bearer "):
@@ -181,8 +181,8 @@ async def optional_jwt_token(
     db: aiosqlite.Connection = Depends(get_db),
 ) -> dict[str, Any] | None:
     """Try to authenticate via JWT, but don't fail if missing/invalid."""
-    from ..auth_utils import verify_token
-    from ..store import get_user_by_id
+    from api.auth_utils import verify_token
+    from api.store import get_user_by_id
 
     auth_header = request.headers.get("Authorization", "")
     if not auth_header.startswith("Bearer "):

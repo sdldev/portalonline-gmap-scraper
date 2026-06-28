@@ -7,8 +7,8 @@ import json
 import logging
 import sys
 
-from .config import BATCH_SIZE, COOLDOWN_SEC, CSV_FILENAME, MAX_TABS, TARGET_LEADS
-from .scraper import scrape, scrape_smart
+from config import BATCH_SIZE, COOLDOWN_SEC, CSV_FILENAME, MAX_TABS, TARGET_LEADS
+from scraper import scrape, scrape_smart
 
 logging.basicConfig(
     level=logging.INFO,

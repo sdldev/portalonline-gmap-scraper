@@ -33,7 +33,7 @@ from contextlib import suppress
 from camoufox.addons import DefaultAddons
 from camoufox.async_api import AsyncCamoufox
 
-from .config import (
+from config import (
     BATCH_SIZE,
     CATEGORY_VARIATIONS,
     COOLDOWN_SEC,

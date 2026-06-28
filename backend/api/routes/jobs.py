@@ -7,14 +7,14 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.responses import StreamingResponse
 
-from ..deps import get_db, get_job_manager
-from ..middleware.auth import require_user
-from ..models import (
+from api.deps import get_db, get_job_manager
+from api.middleware.auth import require_user
+from api.models import (
     JobCreate,
     JobResponse,
     JobsPage,
 )
-from ..store import get_job, get_leads_by_job, list_jobs
+from api.store import get_job, get_leads_by_job, list_jobs
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1/jobs", tags=["jobs"])

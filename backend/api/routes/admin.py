@@ -5,15 +5,15 @@ import logging
 from fastapi import APIRouter, Depends, Query, Request
 from pydantic import BaseModel
 
-from ..deps import get_db
-from ..middleware.auth import require_admin
-from ..models import (
+from api.deps import get_db
+from api.middleware.auth import require_admin
+from api.models import (
     AuditLogPage,
     CleanupRequest,
     CleanupResponse,
     DbStatsResponse,
 )
-from ..store import get_audit_logs, get_dashboard_stats, get_db_stats, run_cleanup
+from api.store import get_audit_logs, get_dashboard_stats, get_db_stats, run_cleanup
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1/admin", tags=["admin"])

@@ -5,10 +5,10 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, Field
 
-from ..auth_utils import create_token
-from ..deps import get_db
-from ..middleware.auth import verify_jwt_token
-from ..store import verify_password
+from api.auth_utils import create_token
+from api.deps import get_db
+from api.middleware.auth import verify_jwt_token
+from api.store import verify_password
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])

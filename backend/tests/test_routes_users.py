@@ -1,4 +1,4 @@
-"""Tests for results query engine."""
+"""Tests for user management endpoints."""
 
 import os
 import tempfile
@@ -6,9 +6,9 @@ import tempfile
 import pytest
 from httpx import ASGITransport, AsyncClient
 
-from backend.api.app import create_app
-from backend.api.job_manager import JobManager
-from backend.api.store import init_db
+from api.app import create_app
+from api.job_manager import JobManager
+from api.store import init_db
 
 
 @pytest.fixture
@@ -16,7 +16,7 @@ async def client():
     db_path = tempfile.mktemp(suffix=".db")
     db = await init_db(db_path)
 
-    from backend.api import store
+    from api import store
     old_path = store.DB_PATH
     store.DB_PATH = db_path
 
@@ -26,7 +26,7 @@ async def client():
     app.state.db = db
     app.state.job_manager = JobManager(db)
 
-    from backend.api.middleware.auth import ensure_default_admin
+    from api.middleware.auth import ensure_default_admin
     await ensure_default_admin(db)
 
     async with AsyncClient(
@@ -40,14 +40,22 @@ async def client():
     store.DB_PATH = old_path
 
 
-class TestResultsRoutes:
-    async def test_list_results(self, client):
-        resp = await client.get(
-            "/api/v1/results",
+class TestUsersRoutes:
+    async def test_create_user_admin(self, client):
+        resp = await client.post(
+            "/api/v1/users",
+            json={"username": "newuser", "role": "user"},
             headers={"X-API-Key": "test-admin-key"},
         )
-        assert resp.status_code in (200, 400)
+        assert resp.status_code == 200
 
-    async def test_results_unauthorized(self, client):
-        resp = await client.get("/api/v1/results")
+    async def test_list_users_admin(self, client):
+        resp = await client.get(
+            "/api/v1/users",
+            headers={"X-API-Key": "test-admin-key"},
+        )
+        assert resp.status_code == 200
+
+    async def test_unauthorized_no_key(self, client):
+        resp = await client.get("/api/v1/users")
         assert resp.status_code == 401

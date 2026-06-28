@@ -5,7 +5,7 @@ import logging
 
 import httpx
 
-from ..models import WebhookConfig
+from api.models import WebhookConfig
 
 logger = logging.getLogger(__name__)
 

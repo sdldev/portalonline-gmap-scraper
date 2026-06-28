@@ -5,8 +5,8 @@ import tempfile
 
 import pytest
 
-from backend.api.job_manager import JobManager
-from backend.api.store import (
+from api.job_manager import JobManager
+from api.store import (
     create_user,
     get_job,
     init_db,

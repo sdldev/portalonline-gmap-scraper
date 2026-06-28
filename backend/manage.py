@@ -8,6 +8,7 @@ import sys
 
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 
+
 async def _get_store():
     spec = importlib.util.spec_from_file_location(
         "store", os.path.join(PROJECT_ROOT, "backend/api/store.py")
@@ -15,6 +16,7 @@ async def _get_store():
     store = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(store)
     return store
+
 
 async def cmd_list():
     store = await _get_store()
@@ -32,6 +34,7 @@ async def cmd_list():
             )
     await db.close()
 
+
 async def cmd_create(username, role="user", api_key=None):
     store = await _get_store()
     db = await store.init_db()
@@ -39,6 +42,7 @@ async def cmd_create(username, role="user", api_key=None):
     print(f"Created: {user['username']} (role={user['role']})")
     print(f"API Key : {user['api_key']}")
     await db.close()
+
 
 async def cmd_delete(username):
     store = await _get_store()
@@ -52,6 +56,7 @@ async def cmd_delete(username):
     await store.delete_user(db, target["user_id"])
     print(f"Deleted: {username}")
     await db.close()
+
 
 async def cmd_seed():
     store = await _get_store()
@@ -78,6 +83,7 @@ async def cmd_seed():
         print("All seed users already exist.")
     await db.close()
 
+
 async def main():
     if len(sys.argv) < 2:
         print("Usage: python manage.py <cmd> [args]")
@@ -99,6 +105,7 @@ async def main():
     else:
         print(f"Unknown command: {cmd}")
         sys.exit(1)
+
 
 if __name__ == "__main__":
     asyncio.run(main())

@@ -5,7 +5,7 @@ import tempfile
 
 import pytest
 
-from backend.api.store import (
+from api.store import (
     cancel_job,
     create_job,
     create_user,

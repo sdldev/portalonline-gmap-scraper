@@ -6,10 +6,10 @@ import time
 import psutil
 from fastapi import APIRouter, Depends, Request
 
-from ..deps import get_db
-from ..middleware.auth import require_user
-from ..models import HealthResponse, SystemInfo
-from ..store import get_db_stats
+from api.deps import get_db
+from api.middleware.auth import require_user
+from api.models import HealthResponse, SystemInfo
+from api.store import get_db_stats
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["health"])

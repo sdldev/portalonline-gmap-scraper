@@ -5,10 +5,10 @@ import logging
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 
-from ..deps import get_db
-from ..middleware.auth import require_admin, require_user
-from ..models import UserCreate, UserResponse, UserUpdate
-from ..store import (
+from api.deps import get_db
+from api.middleware.auth import require_admin, require_user
+from api.models import UserCreate, UserResponse, UserUpdate
+from api.store import (
     create_user,
     delete_user,
     generate_random_password,
@@ -150,7 +150,7 @@ async def generate_api_key_route(
 
 async def log_audit_generate(db, user_id: str, request: Request, key_type: str):
     """Log audit entry for key generation."""
-    from ..store import log_audit
+    from api.store import log_audit
 
     ip = request.client.host if request.client else None
     await log_audit(

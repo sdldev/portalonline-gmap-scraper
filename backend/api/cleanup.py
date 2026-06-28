@@ -6,7 +6,7 @@ import os
 
 import aiosqlite
 
-from .store import run_cleanup
+from api.store import run_cleanup
 
 logger = logging.getLogger(__name__)
 

@@ -7,8 +7,8 @@ from typing import Any
 
 import aiosqlite
 
-from ..scraper import scrape, scrape_smart
-from .store import (
+from scraper import scrape, scrape_smart
+from api.store import (
     cancel_job,
     create_job,
     get_next_queued,

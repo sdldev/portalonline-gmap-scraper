@@ -7,14 +7,14 @@ import signal
 
 import uvicorn
 
-from .config import API_HOST, API_PORT
+from config import API_HOST, API_PORT
 
 logger = logging.getLogger(__name__)
 
 
 async def main():
     """Entry point: create FastAPI app, configure Uvicorn."""
-    from .api.app import create_app
+    from api.app import create_app
 
     app = create_app()
 

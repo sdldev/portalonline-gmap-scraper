@@ -2,7 +2,7 @@
 
 import pytest
 
-from backend.api.middleware.sanitize import (
+from api.middleware.sanitize import (
     sanitize_keyword,
     sanitize_location,
     sanitize_username,

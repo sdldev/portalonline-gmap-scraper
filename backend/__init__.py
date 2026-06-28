@@ -4,7 +4,7 @@ __version__ = "0.1.0"
 __author__ = "Your Name"
 __license__ = "MIT"
 
-from .config import (
+from config import (
     ADMIN_API_KEY,
     API_HOST,
     API_KEY,
@@ -23,7 +23,7 @@ from .config import (
     SAVE_AS_CSV,
     TARGET_LEADS,
 )
-from .scraper import (
+from scraper import (
     collect_lead_links,
     extract_lead_data,
     process_all_leads,

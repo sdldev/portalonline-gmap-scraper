@@ -3,7 +3,7 @@
 import pytest
 from pydantic import ValidationError
 
-from backend.api.models import (
+from api.models import (
     JobCreate,
     UserCreate,
     UserUpdate,

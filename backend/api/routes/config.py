@@ -5,10 +5,10 @@ import os
 
 from fastapi import APIRouter, Depends, Request
 
-from ..deps import get_db
-from ..middleware.auth import require_admin
-from ..models import ConfigResponse, ConfigUpdate
-from ..store import log_audit
+from api.deps import get_db
+from api.middleware.auth import require_admin
+from api.models import ConfigResponse, ConfigUpdate
+from api.store import log_audit
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1/config", tags=["config"])

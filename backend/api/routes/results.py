@@ -7,10 +7,10 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.responses import StreamingResponse
 
-from ..deps import get_db
-from ..middleware.auth import require_user
-from ..models import LeadResponse, LeadsPage
-from ..store import get_lead_stats, get_leads_by_user
+from api.deps import get_db
+from api.middleware.auth import require_user
+from api.models import LeadResponse, LeadsPage
+from api.store import get_lead_stats, get_leads_by_user
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1/results", tags=["results"])
@@ -124,7 +124,7 @@ async def get_result(
     row = await cursor.fetchone()
     if row is None:
         raise HTTPException(404, "Lead not found")
-    from ..store import _row_to_lead
+    from api.store import _row_to_lead
     lead = _row_to_lead(row)
     if not is_admin and lead["user_id"] != request.state.user_id:
         raise HTTPException(403, "Access denied")

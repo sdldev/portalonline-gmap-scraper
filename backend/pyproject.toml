@@ -39,7 +39,8 @@ dev = [
 ]
 
 [project.scripts]
-portalonline-gmap-scraper = "backend.main:main"
+portalonline-gmap-scraper = "main:main"
+manage = "manage:main"
 
 [build-system]
 requires = ["hatchling"]
@@ -50,7 +51,7 @@ asyncio_mode = "auto"
 testpaths = ["tests"]
 
 [tool.hatch.build.targets.wheel]
-packages = ["backend"]
+packages = ["."]
 
 [tool.ruff]
 line-length = 88

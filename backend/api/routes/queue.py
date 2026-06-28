@@ -4,10 +4,10 @@ import logging
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 
-from ..deps import get_db
-from ..middleware.auth import require_admin, require_user
-from ..models import QueueStatus
-from ..store import get_job, get_queue, reindex_queue, update_job_status
+from api.deps import get_db
+from api.middleware.auth import require_admin, require_user
+from api.models import QueueStatus
+from api.store import get_job, get_queue, reindex_queue, update_job_status
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1/queue", tags=["queue"])

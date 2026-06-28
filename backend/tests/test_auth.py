@@ -6,9 +6,9 @@ import tempfile
 import pytest
 from httpx import ASGITransport, AsyncClient
 
-from backend.api.app import create_app
-from backend.api.job_manager import JobManager
-from backend.api.store import init_db
+from api.app import create_app
+from api.job_manager import JobManager
+from api.store import init_db
 
 
 @pytest.fixture
@@ -17,7 +17,7 @@ async def client():
     db_path = tempfile.mktemp(suffix=".db")
     db = await init_db(db_path)
 
-    from backend.api import store as store_mod
+    from api import store as store_mod
     old_path = store_mod.DB_PATH
     store_mod.DB_PATH = db_path
 
@@ -29,7 +29,7 @@ async def client():
     app.state.job_manager = JobManager(db)
 
     # Create admin user with password
-    from backend.api.store import create_user_with_password
+    from api.store import create_user_with_password
     _ = await create_user_with_password(
         db, "admin", password="admin123", role="admin",
         api_key="test-admin-key",
@@ -50,7 +50,7 @@ class TestJWTUtils:
     """Unit tests for JWT token creation and verification."""
 
     def test_create_and_verify_token(self):
-        from backend.api.auth_utils import create_token, verify_token
+        from api.auth_utils import create_token, verify_token
 
         os.environ["JWT_SECRET"] = "test-secret"
         token = create_token("user1", "testuser", "user")
@@ -63,7 +63,7 @@ class TestJWTUtils:
         assert payload["role"] == "user"
 
     def test_verify_invalid_token(self):
-        from backend.api.auth_utils import verify_token
+        from api.auth_utils import verify_token
 
         os.environ["JWT_SECRET"] = "test-secret"
         payload = verify_token("invalid.token.here")
@@ -72,7 +72,7 @@ class TestJWTUtils:
     def test_raises_without_secret(self):
         import importlib
 
-        import backend.api.auth_utils as mod
+        import api.auth_utils as mod
 
         old_secret = os.environ.pop("JWT_SECRET", None)
         importlib.reload(mod)

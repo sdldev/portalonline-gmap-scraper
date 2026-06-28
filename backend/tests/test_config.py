@@ -9,7 +9,7 @@ import pytest
 def _isolated_config(monkeypatch, tmp_path):
     """Reload config with no .env file and no relevant env vars set."""
 
-    import backend.config as config_module
+    import config as config_module
 
     monkeypatch.setattr("dotenv.load_dotenv", lambda *a, **kw: None)
     env_vars = [
@@ -68,7 +68,7 @@ class TestConfigFromEnv:
     def test_target_leads_from_env(self, monkeypatch):
         import importlib
 
-        import backend.config as config_module
+        import config as config_module
 
         monkeypatch.setenv("LEADS", "50")
         importlib.reload(config_module)
@@ -77,7 +77,7 @@ class TestConfigFromEnv:
     def test_max_tabs_from_env(self, monkeypatch):
         import importlib
 
-        import backend.config as config_module
+        import config as config_module
 
         monkeypatch.setenv("MAX_TAB_ALLOWED", "4")
         importlib.reload(config_module)
@@ -86,7 +86,7 @@ class TestConfigFromEnv:
     def test_headless_false_from_env(self, monkeypatch):
         import importlib
 
-        import backend.config as config_module
+        import config as config_module
 
         monkeypatch.setenv("HEADLESS", "false")
         importlib.reload(config_module)
@@ -95,7 +95,7 @@ class TestConfigFromEnv:
     def test_debug_true_from_env(self, monkeypatch):
         import importlib
 
-        import backend.config as config_module
+        import config as config_module
 
         monkeypatch.setenv("DEBUG", "true")
         importlib.reload(config_module)
@@ -104,7 +104,7 @@ class TestConfigFromEnv:
     def test_batch_size_from_env(self, monkeypatch):
         import importlib
 
-        import backend.config as config_module
+        import config as config_module
 
         monkeypatch.setenv("BATCH_SIZE", "10")
         importlib.reload(config_module)
@@ -113,7 +113,7 @@ class TestConfigFromEnv:
     def test_cooldown_from_env(self, monkeypatch):
         import importlib
 
-        import backend.config as config_module
+        import config as config_module
 
         monkeypatch.setenv("COOLDOWN_SEC", "20")
         importlib.reload(config_module)
@@ -122,7 +122,7 @@ class TestConfigFromEnv:
     def test_process_nice_from_env(self, monkeypatch):
         import importlib
 
-        import backend.config as config_module
+        import config as config_module
 
         monkeypatch.setenv("PROCESS_NICE", "15")
         importlib.reload(config_module)
@@ -131,7 +131,7 @@ class TestConfigFromEnv:
     def test_mem_limit_from_env(self, monkeypatch):
         import importlib
 
-        import backend.config as config_module
+        import config as config_module
 
         monkeypatch.setenv("MEM_LIMIT_MB", "1024")
         importlib.reload(config_module)

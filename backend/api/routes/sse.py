@@ -7,8 +7,8 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.responses import StreamingResponse
 
-from ..deps import get_db, get_job_manager
-from ..store import get_job
+from api.deps import get_db, get_job_manager
+from api.store import get_job
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1", tags=["sse"])
@@ -20,8 +20,8 @@ async def _auth_sse(
     token: str | None = Query(default=None),
 ) -> dict:
     """Auth for SSE: token query param (EventSource can't set custom headers)."""
-    from ..auth_utils import verify_token
-    from ..store import get_user_by_api_key, get_user_by_id
+    from api.auth_utils import verify_token
+    from api.store import get_user_by_api_key, get_user_by_id
 
     user = None
 

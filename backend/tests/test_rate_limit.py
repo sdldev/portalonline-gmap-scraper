@@ -2,7 +2,7 @@
 
 import time
 
-from backend.api.middleware.rate_limit import RateLimiter
+from api.middleware.rate_limit import RateLimiter
 
 
 class TestRateLimiter:

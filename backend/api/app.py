@@ -9,13 +9,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-from .cleanup import CleanupScheduler
-from .job_manager import JobManager
-from .middleware.auth import ensure_default_admin
-from .routes import (
+from api.cleanup import CleanupScheduler
+from api.job_manager import JobManager
+from api.middleware.auth import ensure_default_admin
+from api.routes import (
     admin as admin_routes,
 )
-from .routes import (
+from api.routes import (
     auth,
     config,
     health,
@@ -25,7 +25,7 @@ from .routes import (
     sse,
     users,
 )
-from .store import init_db
+from api.store import init_db
 
 logger = logging.getLogger(__name__)
 

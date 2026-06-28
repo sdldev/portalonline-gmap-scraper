@@ -15,5 +15,5 @@ def get_job_manager(request: Request):
 
 def get_rate_limiter():
     """Dependency returning the global RateLimiter singleton."""
-    from .middleware.rate_limit import get_rate_limiter as _grl
+    from api.middleware.rate_limit import get_rate_limiter as _grl
     return _grl()

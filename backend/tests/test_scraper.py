@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 
-from backend.scraper import (
+from scraper import (
     _COLLECT_LINKS_JS,
     _EXTRACT_DATA_JS,
     _block_heavy_resources,
@@ -77,7 +77,7 @@ class TestResourceManagement:
     @pytest.mark.asyncio
     async def test_memory_guard_no_pause_when_enough_ram(self):
         with patch(
-            "backend.scraper._get_available_ram_mb",
+            "scraper._get_available_ram_mb",
             return_value=99999,
         ):
             paused = await _memory_guard()
@@ -86,9 +86,9 @@ class TestResourceManagement:
     @pytest.mark.asyncio
     async def test_memory_guard_pauses_when_low_ram(self):
         with patch(
-            "backend.scraper._get_available_ram_mb", return_value=100
+            "scraper._get_available_ram_mb", return_value=100
         ):
-            with patch("backend.scraper.asyncio.sleep") as mock_sleep:
+            with patch("scraper.asyncio.sleep") as mock_sleep:
                 paused = await _memory_guard()
                 assert paused is True
                 mock_sleep.assert_called_once()
@@ -230,7 +230,7 @@ class TestProcessAllLeads:
 
         with (
             patch(
-                "backend.scraper.extract_lead_data_with_retry",
+                "scraper.extract_lead_data_with_retry",
                 return_value={
                     "name": "Business",
                     "address": "Address",
@@ -240,9 +240,9 @@ class TestProcessAllLeads:
                     "review_count": "10",
                 },
             ),
-            patch("backend.scraper._random_delay"),
+            patch("scraper._random_delay"),
             patch(
-                "backend.scraper._memory_guard",
+                "scraper._memory_guard",
                 return_value=False,
             ),
         ):
@@ -272,19 +272,19 @@ class TestProcessAllLeads:
 class TestScrape:
     @pytest.mark.asyncio
     async def test_scrape_returns_empty_on_no_leads(self):
-        with patch("backend.scraper.AsyncCamoufox") as mock_camoufox:
+        with patch("scraper.AsyncCamoufox") as mock_camoufox:
             mock_browser = AsyncMock()
             mock_camoufox.return_value.__aenter__.return_value = mock_browser
 
             with patch(
-                "backend.scraper.collect_lead_links", return_value=[]
+                "scraper.collect_lead_links", return_value=[]
             ):
                 result = await scrape("test query")
                 assert result == []
 
     @pytest.mark.asyncio
     async def test_scrape_processes_leads(self):
-        with patch("backend.scraper.AsyncCamoufox") as mock_camoufox:
+        with patch("scraper.AsyncCamoufox") as mock_camoufox:
             mock_browser = AsyncMock()
             mock_camoufox.return_value.__aenter__.return_value = mock_browser
 
@@ -307,16 +307,16 @@ class TestScrape:
 
             with (
                 patch(
-                    "backend.scraper.collect_lead_links",
+                    "scraper.collect_lead_links",
                     side_effect=fake_collect,
                 ),
                 patch(
-                    "backend.scraper.extract_lead_data_with_retry",
+                    "scraper.extract_lead_data_with_retry",
                     side_effect=fake_extract,
                 ),
-                patch("backend.scraper._random_delay"),
+                patch("scraper._random_delay"),
                 patch(
-                    "backend.scraper._memory_guard",
+                    "scraper._memory_guard",
                     return_value=False,
                 ),
             ):
