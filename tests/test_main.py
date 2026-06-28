@@ -6,7 +6,7 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from portalonline_gmap_scraper.main import main, save_to_csv
+from backend.main import main, save_to_csv
 
 
 class TestSaveToCSV:
@@ -92,12 +92,12 @@ class TestMainCLI:
     @pytest.mark.asyncio
     async def test_main_calls_scrape_with_query(self):
         with patch(
-            "portalonline_gmap_scraper.main.scrape", new_callable=AsyncMock
+            "backend.main.scrape", new_callable=AsyncMock
         ) as mock_scrape:
             mock_scrape.return_value = [{"name": "Test Business"}]
 
-            with patch("sys.argv", ["portalonline_gmap_scraper.main", "test query"]):
-                with patch("portalonline_gmap_scraper.main.save_to_csv"):
+            with patch("sys.argv", ["backend.main", "test query"]):
+                with patch("backend.main.save_to_csv"):
                     await main()
                     # It should call with default target and max_tabs from config
                     mock_scrape.assert_called_once()
@@ -107,14 +107,14 @@ class TestMainCLI:
     @pytest.mark.asyncio
     async def test_main_calls_scrape_with_custom_params(self):
         with patch(
-            "portalonline_gmap_scraper.main.scrape", new_callable=AsyncMock
+            "backend.main.scrape", new_callable=AsyncMock
         ) as mock_scrape:
             mock_scrape.return_value = [{"name": "Test Business"}]
 
             with patch(
                 "sys.argv",
                 [
-                    "portalonline_gmap_scraper.main",
+                    "backend.main",
                     "test query",
                     "--leads",
                     "10",
@@ -126,7 +126,7 @@ class TestMainCLI:
                     "15",
                 ],
             ):
-                with patch("portalonline_gmap_scraper.main.save_to_csv"):
+                with patch("backend.main.save_to_csv"):
                     await main()
                     mock_scrape.assert_called_once_with(
                         "test query",
@@ -148,11 +148,11 @@ class TestMainCLI:
         ]
 
         with patch(
-            "portalonline_gmap_scraper.main.scrape", new_callable=AsyncMock
+            "backend.main.scrape", new_callable=AsyncMock
         ) as mock_scrape:
             mock_scrape.return_value = results
 
-            argv = ["portalonline_gmap_scraper.main", "test query", "--json"]
+            argv = ["backend.main", "test query", "--json"]
             with patch("sys.argv", argv):
                 with patch("builtins.print") as mock_print:
                     await main()

@@ -8,7 +8,16 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from ..deps import get_db
 from ..middleware.auth import require_admin, require_user
 from ..models import UserCreate, UserResponse, UserUpdate
-from ..store import create_user, delete_user, get_user_by_id, list_users, update_user
+from ..store import (
+    create_user,
+    delete_user,
+    generate_random_password,
+    get_user_by_id,
+    list_users,
+    regenerate_api_key,
+    update_user,
+    update_user_password,
+)
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1/users", tags=["users"])
@@ -98,3 +107,58 @@ async def delete_user_route(
     if not deleted:
         raise HTTPException(404, "User not found")
     return {"success": True}
+
+
+@router.post("/{user_id}/generate-password")
+async def generate_password_route(
+    user_id: str,
+    request: Request,
+    admin: dict = Depends(require_admin),
+    db=Depends(get_db),
+):
+    """POST /api/v1/users/{id}/generate-password - Generate 16-char password."""
+    user = await get_user_by_id(db, user_id)
+    if user is None:
+        raise HTTPException(404, "User not found")
+
+    password = generate_random_password()
+    await update_user_password(db, user_id, password)
+
+    await log_audit_generate(db, user_id, request, "password")
+    return {"success": True, "password": password}
+
+
+@router.post("/{user_id}/generate-api-key")
+async def generate_api_key_route(
+    user_id: str,
+    request: Request,
+    admin: dict = Depends(require_admin),
+    db=Depends(get_db),
+):
+    """POST /api/v1/users/{id}/generate-api-key - Regenerate API key."""
+    user = await get_user_by_id(db, user_id)
+    if user is None:
+        raise HTTPException(404, "User not found")
+
+    new_key = await regenerate_api_key(db, user_id)
+    if new_key is None:
+        raise HTTPException(404, "User not found")
+
+    await log_audit_generate(db, user_id, request, "api_key")
+    return {"success": True, "api_key": new_key}
+
+
+async def log_audit_generate(db, user_id: str, request: Request, key_type: str):
+    """Log audit entry for key generation."""
+    from ..store import log_audit
+
+    ip = request.client.host if request.client else None
+    await log_audit(
+        db,
+        user_id=request.state.user_id,
+        action=f"generate_{key_type}",
+        target_type="user",
+        target_id=user_id,
+        details=f"Generated new {key_type}",
+        ip_address=ip,
+    )

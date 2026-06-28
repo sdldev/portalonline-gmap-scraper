@@ -2,7 +2,7 @@
 
 import pytest
 
-from portalonline_gmap_scraper.api.middleware.sanitize import (
+from backend.api.middleware.sanitize import (
     sanitize_keyword,
     sanitize_location,
     sanitize_username,

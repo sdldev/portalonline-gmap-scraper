@@ -10,7 +10,7 @@ PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 
 async def _get_store():
     spec = importlib.util.spec_from_file_location(
-        "store", os.path.join(PROJECT_ROOT, "portalonline_gmap_scraper/api/store.py")
+        "store", os.path.join(PROJECT_ROOT, "backend/api/store.py")
     )
     store = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(store)
@@ -26,7 +26,10 @@ async def cmd_list():
         print(f"{'USERNAME':<16} {'ROLE':<8} {'ACTIVE':<8} {'API KEY'}")
         print("-" * 70)
         for u in users:
-            print(f"{u['username']:<16} {u['role']:<8} {str(u['active']):<8} {u['api_key']}")
+            print(
+                f"{u['username']:<16} {u['role']:<8} "
+                f"{str(u['active']):<8} {u['api_key']}"
+            )
     await db.close()
 
 async def cmd_create(username, role="user", api_key=None):
@@ -56,15 +59,21 @@ async def cmd_seed():
     users = await store.list_users(db)
     created = []
     if not any(u["username"] == "admin" for u in users):
-        a = await store.create_user(db, "admin", role="admin")
-        created.append(("admin", a["api_key"]))
+        a = await store.create_user_with_password(
+            db, "admin", password="admin123", role="admin"
+        )
+        created.append(("admin", a["api_key"], "admin123"))
     if not any(u["username"] == "user" for u in users):
-        u = await store.create_user(db, "user", role="user")
-        created.append(("user", u["api_key"]))
+        u = await store.create_user_with_password(
+            db, "user", password="user123", role="user"
+        )
+        created.append(("user", u["api_key"], "user123"))
     if created:
         print("Created users:")
-        for name, key in created:
-            print(f"  {name}: {key}")
+        for name, key, pwd in created:
+            print(f"  {name}:")
+            print(f"    api_key={key}")
+            print(f"    password={pwd}")
     else:
         print("All seed users already exist.")
     await db.close()

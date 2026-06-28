@@ -5,8 +5,8 @@ import tempfile
 
 import pytest
 
-from portalonline_gmap_scraper.api.job_manager import JobManager
-from portalonline_gmap_scraper.api.store import (
+from backend.api.job_manager import JobManager
+from backend.api.store import (
     create_user,
     get_job,
     init_db,

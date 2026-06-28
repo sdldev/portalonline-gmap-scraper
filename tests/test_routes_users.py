@@ -6,9 +6,9 @@ import tempfile
 import pytest
 from httpx import ASGITransport, AsyncClient
 
-from portalonline_gmap_scraper.api.app import create_app
-from portalonline_gmap_scraper.api.job_manager import JobManager
-from portalonline_gmap_scraper.api.store import init_db
+from backend.api.app import create_app
+from backend.api.job_manager import JobManager
+from backend.api.store import init_db
 
 
 @pytest.fixture
@@ -16,7 +16,7 @@ async def client():
     db_path = tempfile.mktemp(suffix=".db")
     db = await init_db(db_path)
 
-    from portalonline_gmap_scraper.api import store
+    from backend.api import store
     old_path = store.DB_PATH
     store.DB_PATH = db_path
 
@@ -26,7 +26,7 @@ async def client():
     app.state.db = db
     app.state.job_manager = JobManager(db)
 
-    from portalonline_gmap_scraper.api.middleware.auth import ensure_default_admin
+    from backend.api.middleware.auth import ensure_default_admin
     await ensure_default_admin(db)
 
     async with AsyncClient(

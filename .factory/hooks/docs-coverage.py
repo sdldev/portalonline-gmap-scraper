@@ -35,7 +35,7 @@ def analyze_python_file(file_path):
 
 def main():
     src_dir = os.environ.get("DROID_PROJECT_DIR", ".")
-    package_dir = os.path.join(src_dir, "portalonline_gmap_scraper")
+    package_dir = os.path.join(src_dir, "backend")
 
     if not os.path.isdir(package_dir):
         # Try generic src/ fallback
@@ -61,7 +61,7 @@ def main():
         coverage = (documented_functions / total_functions) * 100
 
         print("\n📊 Python Docstring Coverage Report")
-        print("   Package: portalonline_gmap_scraper")
+        print("   Package: backend")
         print(f"   Documented functions: {documented_functions}/{total_functions}")
         print(f"   Coverage: {coverage:.1f}%")
 

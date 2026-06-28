@@ -3,7 +3,7 @@
 import pytest
 from pydantic import ValidationError
 
-from portalonline_gmap_scraper.api.models import (
+from backend.api.models import (
     JobCreate,
     UserCreate,
     UserUpdate,

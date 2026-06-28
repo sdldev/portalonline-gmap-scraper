@@ -6,6 +6,8 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from .cleanup import CleanupScheduler
 from .job_manager import JobManager
@@ -14,6 +16,7 @@ from .routes import (
     admin as admin_routes,
 )
 from .routes import (
+    auth,
     config,
     health,
     jobs,
@@ -117,6 +120,7 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
+    app.include_router(auth.router)
     app.include_router(users.router)
     app.include_router(jobs.router)
     app.include_router(health.router)
@@ -125,5 +129,29 @@ def create_app() -> FastAPI:
     app.include_router(admin_routes.router)
     app.include_router(sse.router)
     app.include_router(config.router)
+
+    # Serve frontend static files (after API routes)
+    static_dir = os.path.join(os.path.dirname(__file__), "..", "static")
+    if os.path.isdir(static_dir):
+        app.mount(
+            "/assets",
+            StaticFiles(directory=os.path.join(static_dir, "assets")),
+            name="assets",
+        )
+
+        @app.get("/favicon.svg")
+        async def serve_favicon():
+            path = os.path.join(static_dir, "favicon.svg")
+            if os.path.exists(path):
+                return FileResponse(path)
+            return {"detail": "Not found"}
+
+        @app.get("/{full_path:path}")
+        async def serve_spa(full_path: str):
+            """SPA fallback - serve index.html for client-side routing."""
+            index_path = os.path.join(static_dir, "index.html")
+            if os.path.exists(index_path):
+                return FileResponse(index_path)
+            return {"detail": "Frontend not built"}
 
     return app

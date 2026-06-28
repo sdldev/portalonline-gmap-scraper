@@ -3,6 +3,7 @@
 import logging
 
 from fastapi import APIRouter, Depends, Query, Request
+from pydantic import BaseModel
 
 from ..deps import get_db
 from ..middleware.auth import require_admin
@@ -12,7 +13,7 @@ from ..models import (
     CleanupResponse,
     DbStatsResponse,
 )
-from ..store import get_audit_logs, get_db_stats, run_cleanup
+from ..store import get_audit_logs, get_dashboard_stats, get_db_stats, run_cleanup
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1/admin", tags=["admin"])
@@ -57,3 +58,22 @@ async def db_stats(
 ):
     """GET /api/v1/admin/db-stats (admin)."""
     return await get_db_stats(db)
+
+
+class DashboardStatsResponse(BaseModel):
+    total_users: int
+    total_jobs: int
+    total_leads: int
+    active_jobs: int
+    queued_jobs: int
+    recent_jobs: list[dict]
+
+
+@router.get("/stats", response_model=DashboardStatsResponse)
+async def dashboard_stats(
+    request: Request,
+    admin: dict = Depends(require_admin),
+    db=Depends(get_db),
+):
+    """GET /api/v1/admin/stats - Dashboard aggregate counts."""
+    return await get_dashboard_stats(db)

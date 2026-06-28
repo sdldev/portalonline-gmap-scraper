@@ -1,6 +1,7 @@
 """SQLite persistence layer for PortalOnline GMap Scraper API."""
 
 import logging
+import secrets
 import uuid
 from datetime import UTC, datetime
 from pathlib import Path
@@ -35,6 +36,7 @@ async def init_db(db_path: str = DB_PATH) -> aiosqlite.Connection:
             username     TEXT NOT NULL UNIQUE,
             role         TEXT NOT NULL DEFAULT 'user',
             api_key      TEXT NOT NULL UNIQUE,
+            password_hash TEXT,
             active       INTEGER NOT NULL DEFAULT 1,
             webhook_url  TEXT,
             webhook_events TEXT DEFAULT '["job.completed","job.failed"]',
@@ -84,6 +86,13 @@ async def init_db(db_path: str = DB_PATH) -> aiosqlite.Connection:
             created_at  TEXT NOT NULL
         );
     """)
+
+    # Migration: add password_hash column if missing
+    try:
+        await db.execute("ALTER TABLE users ADD COLUMN password_hash TEXT")
+        await db.commit()
+    except Exception:
+        pass  # Column already exists
 
     await _create_indexes(db)
     return db
@@ -758,3 +767,152 @@ async def run_cleanup(
         "db_size_before_mb": round(file_size_before / (1024 * 1024), 2),
         "db_size_after_mb": round(file_size_after / (1024 * 1024), 2),
     }
+
+
+# --- Auth / Password Functions ---
+
+
+async def get_user_by_username(
+    db: aiosqlite.Connection, username: str
+) -> dict[str, Any] | None:
+    """Look up a user by username. Returns None if not found."""
+    async with db.execute(
+        "SELECT user_id, username, role, api_key, password_hash, active, "
+        "webhook_url, webhook_events, created_at FROM users WHERE username = ?",
+        (username,),
+    ) as cursor:
+        row = await cursor.fetchone()
+    if row is None:
+        return None
+    return _row_to_user_with_password(row)
+
+
+async def create_user_with_password(
+    db: aiosqlite.Connection,
+    username: str,
+    password: str,
+    role: str = "user",
+    api_key: str | None = None,
+) -> dict[str, Any]:
+    """Create user with bcrypt password hash."""
+    import bcrypt
+
+    user_id = _uid()
+    key = api_key or f"pk_{_uid()}{_uid()}"
+    password_hash = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+    now = _now()
+    await db.execute(
+        "INSERT INTO users (user_id, username, role, api_key, password_hash, "
+        "active, created_at) VALUES (?, ?, ?, ?, ?, 1, ?)",
+        (user_id, username, role, key, password_hash, now),
+    )
+    await db.commit()
+    return {
+        "user_id": user_id, "username": username, "role": role,
+        "api_key": key, "active": True, "password_hash": password_hash,
+        "webhook_url": None, "webhook_events": '["job.completed","job.failed"]',
+        "created_at": now,
+    }
+
+
+async def verify_password(
+    db: aiosqlite.Connection, username: str, password: str
+) -> dict[str, Any] | None:
+    """Verify username + password. Returns user dict or None."""
+    import bcrypt
+
+    user = await get_user_by_username(db, username)
+    if user is None:
+        return None
+    if not user.get("password_hash"):
+        return None
+    if not bcrypt.checkpw(password.encode(), user["password_hash"].encode()):
+        return None
+    if not user["active"]:
+        return None
+    return user
+
+
+async def update_user_password(
+    db: aiosqlite.Connection, user_id: str, new_password: str
+) -> str:
+    """Set a new bcrypt password hash for user. Returns the plaintext password."""
+    import bcrypt
+
+    password_hash = bcrypt.hashpw(new_password.encode(), bcrypt.gensalt()).decode()
+    await db.execute(
+        "UPDATE users SET password_hash = ? WHERE user_id = ?",
+        (password_hash, user_id),
+    )
+    await db.commit()
+    return new_password
+
+
+async def regenerate_api_key(
+    db: aiosqlite.Connection, user_id: str
+) -> str | None:
+    """Generate a new API key for user. Returns new key or None if user not found."""
+    user = await get_user_by_id(db, user_id)
+    if user is None:
+        return None
+    new_key = f"pk_{_uid()}{_uid()}"
+    await db.execute(
+        "UPDATE users SET api_key = ? WHERE user_id = ?",
+        (new_key, user_id),
+    )
+    await db.commit()
+    return new_key
+
+
+async def get_dashboard_stats(db: aiosqlite.Connection) -> dict[str, Any]:
+    """Return dashboard aggregate stats: user count, job counts, recent jobs."""
+    async with db.execute("SELECT COUNT(*) FROM users") as cursor:
+        total_users = (await cursor.fetchone())[0]
+
+    async with db.execute("SELECT COUNT(*) FROM jobs") as cursor:
+        total_jobs = (await cursor.fetchone())[0]
+
+    async with db.execute("SELECT COUNT(*) FROM leads") as cursor:
+        total_leads = (await cursor.fetchone())[0]
+
+    async with db.execute(
+        "SELECT COUNT(*) FROM jobs WHERE status = 'running'"
+    ) as cursor:
+        active_jobs = (await cursor.fetchone())[0]
+
+    async with db.execute(
+        "SELECT COUNT(*) FROM jobs WHERE status = 'queued'"
+    ) as cursor:
+        queued_jobs = (await cursor.fetchone())[0]
+
+    async with db.execute(
+        "SELECT j.job_id, j.user_id, u.username, j.keyword, j.location, j.query, "
+        "j.status, j.target, j.smart, j.queue_position, j.leads_collected, "
+        "j.leads_total, j.error, j.created_at, j.started_at, j.completed_at "
+        "FROM jobs j JOIN users u ON j.user_id = u.user_id "
+        "ORDER BY j.created_at DESC LIMIT 10"
+    ) as cursor:
+        rows = await cursor.fetchall()
+
+    return {
+        "total_users": total_users,
+        "total_jobs": total_jobs,
+        "total_leads": total_leads,
+        "active_jobs": active_jobs,
+        "queued_jobs": queued_jobs,
+        "recent_jobs": [_row_to_job(r) for r in rows],
+    }
+
+
+def _row_to_user_with_password(row: tuple) -> dict[str, Any]:
+    return {
+        "user_id": row[0], "username": row[1], "role": row[2],
+        "api_key": row[3], "password_hash": row[4], "active": bool(row[5]),
+        "webhook_url": row[6], "webhook_events": row[7],
+        "created_at": row[8],
+    }
+
+
+def generate_random_password(length: int = 16) -> str:
+    """Generate a cryptographically secure random password."""
+    return secrets.token_urlsafe(length)[:length]
