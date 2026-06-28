@@ -28,6 +28,8 @@ class TestSaveToCSV:
                 "address": "123 Main St",
                 "phone": "555-1234",
                 "website": "https://example.com",
+                "rating": "4.5",
+                "review_count": "123",
             }
         ]
 
@@ -53,12 +55,16 @@ class TestSaveToCSV:
                 "address": "Address 1",
                 "phone": "Phone 1",
                 "website": "Website 1",
+                "rating": "4.5",
+                "review_count": "100",
             },
             {
                 "name": "Business 2",
                 "address": "Address 2",
                 "phone": "Phone 2",
                 "website": "Website 2",
+                "rating": "3.8",
+                "review_count": "25",
             },
         ]
 
@@ -132,7 +138,14 @@ class TestMainCLI:
 
     @pytest.mark.asyncio
     async def test_main_outputs_json(self):
-        results = [{"name": "Test Business", "address": "Test Address"}]
+        results = [
+            {
+                "name": "Test Business",
+                "address": "Test Address",
+                "rating": "4.0",
+                "review_count": "50",
+            }
+        ]
 
         with patch(
             "portalonline_gmap_scraper.main.scrape", new_callable=AsyncMock

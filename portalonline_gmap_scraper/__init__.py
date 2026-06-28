@@ -5,6 +5,10 @@ __author__ = "Your Name"
 __license__ = "MIT"
 
 from .config import (
+    ADMIN_API_KEY,
+    API_HOST,
+    API_KEY,
+    API_PORT,
     BATCH_SIZE,
     CATEGORY_VARIATIONS,
     COOLDOWN_SEC,
@@ -46,4 +50,8 @@ __all__ = [
     "MEM_LIMIT_MB",
     "MAX_URLS_PER_QUERY",
     "INTER_QUERY_COOLDOWN",
+    "API_HOST",
+    "API_PORT",
+    "API_KEY",
+    "ADMIN_API_KEY",
 ]

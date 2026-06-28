@@ -157,6 +157,8 @@ class TestExtractLeadData:
             "address": "123 Test St",
             "phone": "555-1234",
             "website": "https://example.com",
+            "rating": "4.5",
+            "review_count": "123",
         }
 
         result = await extract_lead_data(mock_page, "https://maps.google.com/place/1")
@@ -164,6 +166,8 @@ class TestExtractLeadData:
         assert result is not None
         assert result["name"] == "Test Business"
         assert result["address"] == "123 Test St"
+        assert result["rating"] == "4.5"
+        assert result["review_count"] == "123"
 
     @pytest.mark.asyncio
     async def test_returns_none_on_failure(self):
@@ -232,6 +236,8 @@ class TestProcessAllLeads:
                     "address": "Address",
                     "phone": "Phone",
                     "website": "Website",
+                    "rating": "4.0",
+                    "review_count": "10",
                 },
             ),
             patch("portalonline_gmap_scraper.scraper._random_delay"),
@@ -295,6 +301,8 @@ class TestScrape:
                     "phone": "08123456789",
                     "address": "Addr",
                     "website": "N/A",
+                    "rating": "4.2",
+                    "review_count": "50",
                 }
 
             with (

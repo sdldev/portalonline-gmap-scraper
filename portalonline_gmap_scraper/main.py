@@ -30,6 +30,7 @@ def save_to_csv(results: list[dict], filename: str = CSV_FILENAME):
 
 
 async def main():
+    """Parse CLI arguments and run the scraper pipeline."""
     parser = argparse.ArgumentParser(
         description="Google Maps Lead Generator - Extract business leads"
     )

@@ -4,22 +4,65 @@
 
 PortalOnline GMap Scraper -- a Python CLI tool that scrapes business leads from Google Maps using Camoufox (anti-detection Firefox browser). Tuned for VPS environments (4 CPU / 5GB RAM). Collects URLs first, then processes them with a single worker page to stay within Camoufox's memory limits (~900MB peak).
 
-## Project Structure
+## Project Structure (Monorepo)
 
 ```
-portalonline_gmap_scraper/     # Source package
-    __init__.py         # Public API exports
-    config.py           # Settings from .env + defaults
-    main.py             # CLI entry point (argparse)
-    scraper.py          # Core scraping logic (Camoufox, async)
-tests/                  # pytest test suite
-    test_config.py      # Config defaults & env override tests
-    test_main.py        # CLI & CSV export tests
-    test_scraper.py     # Scraper logic tests (mocked browser)
-main.py                 # Legacy runner (calls main.main)
-.env                    # Environment config (gitignored)
-pyproject.toml          # Project metadata, deps, tool config
+├── backend/                    # Python API backend
+│   ├── app/
+│   │   ├── __init__.py
+│   │   ├── main.py            # FastAPI/Flask entry point
+│   │   ├── config.py          # Settings from .env
+│   │   ├── api/               # API routes
+│   │   │   ├── __init__.py
+│   │   │   ├── routes_leads.py
+│   │   │   └── routes_health.py
+│   │   ├── models/            # Data models
+│   │   │   ├── __init__.py
+│   │   │   └── lead.py
+│   │   ├── services/          # Business logic
+│   │   │   ├── __init__.py
+│   │   │   └── scraper_service.py
+│   │   └── utils/             # Shared utilities
+│   │       ├── __init__.py
+│   │       └── helpers.py
+│   ├── tests/
+│   │   ├── conftest.py
+│   │   ├── test_api/
+│   │   ├── test_services/
+│   │   └── test_models/
+│   ├── pyproject.toml
+│   └── .env
+│
+├── frontend/                   # Web frontend (Vue/Svelte/Astro)
+│   ├── src/
+│   │   ├── components/        # Reusable UI components
+│   │   ├── pages/             # Page views
+│   │   ├── stores/            # State management
+│   │   ├── services/          # API client services
+│   │   ├── types/             # TypeScript types
+│   │   └── utils/             # Frontend utilities
+│   ├── public/
+│   ├── tests/
+│   ├── package.json
+│   ├── tsconfig.json
+│   └── vite.config.ts
+│
+├── shared/                     # Shared types/configs
+│   ├── types/
+│   └── constants/
+│
+├── scripts/                    # Build/deploy scripts
+├── docs/                       # Documentation
+├── .env                        # Root env (gitignored)
+└── README.md
 ```
+
+### Monorepo Best Practices
+- **Backend**: Python 3.12+ dengan FastAPI/Flask, modular structure
+- **Frontend**: Vue/Svelte/Astro dengan TypeScript, component-based
+- **Shared**: Types dan constants yang dipakai bersama
+- **Independent deployability**: Setiap package bisa di-deploy terpisah
+- **Shared tooling**: Ruff, ESLint, Prettier di root level
 
 ## Build, Test, and Development Commands
 
@@ -129,6 +172,7 @@ Follow the conventions documented in:
 - `.factory/rules/python.md` - Python and Async patterns
 - `.factory/rules/testing.md` - Pytest and Mocking conventions
 - `.factory/rules/security.md` - Secrets, resource safety, and crawler footprints
+- `.factory/rules/code-quality.md` - Code length limits, splitting rules, best practices
 
 ## Token Efficiency & Validation (Hooks)
 - The project has **automatic PostToolUse hooks** enabled (`format.sh`, `test-on-edit.sh`, `scan-secrets.sh`).

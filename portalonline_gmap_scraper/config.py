@@ -54,6 +54,14 @@ CSV_FILENAME = "scraped_data.csv"
 # Development Settings
 DEBUG = os.getenv("DEBUG", "false").lower() == "true"
 
+# API Server Settings
+API_HOST = os.getenv("API_HOST", "0.0.0.0")
+API_PORT = int(os.getenv("API_PORT", "9988"))
+API_KEY = os.getenv("API_KEY", "")  # Empty = no auth (dev only)
+ADMIN_API_KEY = os.getenv(
+    "ADMIN_API_KEY", ""
+)  # Default admin API key (required for first boot)
+
 # Smart search: keyword variations per category
 # Keep only high-value core variations to avoid redundant queries
 CATEGORY_VARIATIONS: dict[str, list[str]] = {

@@ -172,11 +172,24 @@ _EXTRACT_DATA_JS = """
         if (!el) return 'N/A';
         return el.innerText.replace(/\\n/g, ' ').trim();
     };
+    // Rating: the large number displayed next to stars (e.g., "4.5")
+    const ratingEl = document.querySelector('div.fontDisplayLarge');
+    const rating = ratingEl ? ratingEl.innerText.trim() : 'N/A';
+    // Review count: text like "(1,234)" near the rating, inside a button
+    const reviewBtn = document.querySelector('button[data-item-id="reviews"] span');
+    let reviewCount = 'N/A';
+    if (reviewBtn) {
+        const match = reviewBtn.innerText.match(/[\\d,.]+/);
+        if (match) reviewCount = match[0].replace(/,/g, '');
+    }
     return {
-        name:    h1.innerText.trim(),
-        address: getText(document.querySelector('button[data-item-id="address"]')),
-        phone:   getText(document.querySelector('button[data-item-id^="phone:tel:"]')),
-        website: getText(document.querySelector('a[data-item-id="authority"]')),
+        name:        h1.innerText.trim(),
+        address:     getText(document.querySelector('button[data-item-id="address"]')),
+        phone:       getText(document.querySelector(
+                         'button[data-item-id^="phone:tel:"]')),
+        website:     getText(document.querySelector('a[data-item-id="authority"]')),
+        rating:      rating,
+        review_count: reviewCount,
     };
 }
 """
@@ -190,7 +203,7 @@ _COLLECT_LINKS_JS = """
 
 
 def _clean_lead_data(data: dict) -> dict:
-    """Clean address and phone from scraped lead data."""
+    """Clean address, phone, rating, and review count from scraped lead data."""
     addr = data.get("address", "N/A")
     if addr != "N/A":
         addr = _PLUS_CODE_RE.sub("", addr).strip().lstrip(", ").strip()
@@ -200,6 +213,22 @@ def _clean_lead_data(data: dict) -> dict:
     if phone != "N/A":
         phone = phone.replace("\u200b", "").strip()
         data["phone"] = phone
+
+    # Normalize rating: keep as string "4.5" or "N/A"
+    rating = data.get("rating", "N/A")
+    if rating != "N/A":
+        # Extract just the number from strings like "4.5 stars"
+        match = re.match(r"(\d+\.?\d*)", rating)
+        data["rating"] = match.group(1) if match else "N/A"
+
+    # Normalize review count: remove commas, keep as string
+    review_count = data.get("review_count", "N/A")
+    if review_count != "N/A":
+        review_count = review_count.replace(",", "").strip()
+        if review_count.isdigit():
+            data["review_count"] = review_count
+        else:
+            data["review_count"] = "N/A"
 
     return data
 
