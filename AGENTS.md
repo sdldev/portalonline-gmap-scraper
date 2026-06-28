@@ -179,3 +179,15 @@ Follow the conventions documented in:
 - **You do NOT need to manually run `ruff` or `pytest`** after editing a file, as the hooks will run them automatically and verify your changes in the same turn.
 - To save tokens, avoid exploring the filesystem extensively if you can use the IDE plugin context. Always start by reading the specific file mentioned.
 - If you need a fast smoke test manually, run: `pytest tests/ -v --maxfail=1`.
+
+## Planning Documents
+
+Project planning follows a layered document hierarchy. When implementing features, reference the appropriate document:
+
+| Document | Layer | Purpose | When to Read |
+|---|---|---|---|
+| [`ROADMAP.md`](ROADMAP.md) | Product Direction | Phases, milestones, timeline, open decisions | Before starting any new work |
+| Blueprint (docs/) | Strategy | Workstreams, risks, key decisions, deployment model | When planning implementation approach |
+| PRD (docs/) | Requirements | FRs, NFRs, data models, SQL schemas, endpoint specs | When writing code, tests, or reviewing PRs |
+
+**Rule of thumb**: ROADMAP answers "what and when", Blueprint answers "how we're organizing the work", PRD answers "exactly what to build".
