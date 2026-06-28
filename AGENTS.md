@@ -73,14 +73,14 @@ All runtime settings are in `.env` (loaded by `config.py`). Key variables:
 |---|---|---|
 | `LEADS` | 25 | Target lead count |
 | `MAX_TAB_ALLOWED` | 1 | Concurrent browser tabs (Camoufox limit: 1) |
-| `BATCH_SIZE` | 8 | URLs per batch before cooldown |
-| `COOLDOWN_SEC` | 4 | Pause between batches (seconds) |
-| `MEM_LIMIT_MB` | 1536 | Pause when RAM below threshold |
-| `CPU_LIMIT_PERCENT` | 60 | Pause when CPU load above threshold |
-| `INTER_QUERY_COOLDOWN` | 6 | Pause between keyword queries (smart search) |
-| `MAX_URLS_PER_QUERY` | 40 | Max URLs to collect per query |
+| `BATCH_SIZE` | 5 | URLs per batch before cooldown |
+| `COOLDOWN_SEC` | 8 | Pause between batches (seconds) |
+| `MEM_LIMIT_MB` | 8192 | Pause when RAM below threshold |
+| `CPU_LIMIT_PERCENT` | 50 | Pause when CPU load above threshold |
+| `INTER_QUERY_COOLDOWN` | 12 | Pause between keyword queries (smart search) |
+| `MAX_URLS_PER_QUERY` | 60 | Max URLs to collect per query |
 | `MAX_RETRIES` | 2 | Retry attempts for failed URLs |
-| `PROCESS_NICE` | 10 | OS scheduling priority 0-19 |
+| `PROCESS_NICE` | 15 | OS scheduling priority 0-19 |
 | `HEADLESS` | true | Run browser without UI |
 | `DEBUG` | false | Enable debug logging |
 

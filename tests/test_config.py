@@ -1,49 +1,67 @@
 """Tests for configuration module."""
 
-from portalonline_gmap_scraper.config import (
-    BATCH_SIZE,
-    COOLDOWN_SEC,
-    CSV_FILENAME,
-    DEBUG,
-    HEADLESS,
-    MAX_TABS,
-    MEM_LIMIT_MB,
-    PROCESS_NICE,
-    SAVE_AS_CSV,
-    TARGET_LEADS,
-)
+import importlib
+
+import pytest
+
+
+@pytest.fixture()
+def _isolated_config(monkeypatch, tmp_path):
+    """Reload config with no .env file and no relevant env vars set."""
+
+    import portalonline_gmap_scraper.config as config_module
+
+    monkeypatch.setattr("dotenv.load_dotenv", lambda *a, **kw: None)
+    env_vars = [
+        "LEADS",
+        "MAX_TAB_ALLOWED",
+        "HEADLESS",
+        "MAX_RETRIES",
+        "BATCH_SIZE",
+        "COOLDOWN_SEC",
+        "PROCESS_NICE",
+        "MEM_LIMIT_MB",
+        "CPU_LIMIT_PERCENT",
+        "MAX_URLS_PER_QUERY",
+        "INTER_QUERY_COOLDOWN",
+        "DEBUG",
+    ]
+    for var in env_vars:
+        monkeypatch.delenv(var, raising=False)
+    importlib.reload(config_module)
+    yield config_module
 
 
 class TestConfigDefaults:
-    def test_target_leads_default(self):
-        assert TARGET_LEADS == 25
+    def test_target_leads_default(self, _isolated_config):
+        assert _isolated_config.TARGET_LEADS == 25
 
-    def test_max_tabs_default(self):
-        assert MAX_TABS == 1
+    def test_max_tabs_default(self, _isolated_config):
+        assert _isolated_config.MAX_TABS == 1
 
-    def test_headless_default(self):
-        assert HEADLESS is True
+    def test_headless_default(self, _isolated_config):
+        assert _isolated_config.HEADLESS is True
 
-    def test_debug_default(self):
-        assert DEBUG is False
+    def test_debug_default(self, _isolated_config):
+        assert _isolated_config.DEBUG is False
 
-    def test_save_as_csv_default(self):
-        assert SAVE_AS_CSV is True
+    def test_save_as_csv_default(self, _isolated_config):
+        assert _isolated_config.SAVE_AS_CSV is True
 
-    def test_csv_filename_default(self):
-        assert CSV_FILENAME == "scraped_data.csv"
+    def test_csv_filename_default(self, _isolated_config):
+        assert _isolated_config.CSV_FILENAME == "scraped_data.csv"
 
-    def test_batch_size_default(self):
-        assert BATCH_SIZE == 8
+    def test_batch_size_default(self, _isolated_config):
+        assert _isolated_config.BATCH_SIZE == 5
 
-    def test_cooldown_sec_default(self):
-        assert COOLDOWN_SEC == 4
+    def test_cooldown_sec_default(self, _isolated_config):
+        assert _isolated_config.COOLDOWN_SEC == 8.0
 
-    def test_process_nice_default(self):
-        assert PROCESS_NICE == 10
+    def test_process_nice_default(self, _isolated_config):
+        assert _isolated_config.PROCESS_NICE == 15
 
-    def test_mem_limit_mb_default(self):
-        assert MEM_LIMIT_MB == 1536
+    def test_mem_limit_mb_default(self, _isolated_config):
+        assert _isolated_config.MEM_LIMIT_MB == 8192
 
 
 class TestConfigFromEnv:
