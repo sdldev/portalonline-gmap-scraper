@@ -37,3 +37,5 @@ htmlcov/
 # Sensitive User Data
 key.md
 *.key
+
+data/

@@ -1,0 +1,21 @@
+[Unit]
+Description=PortalOnline GMap Scraper API
+After=network.target
+
+[Service]
+Type=simple
+User=indatech
+WorkingDirectory=/home/indatech/Documents/BOT/portalonline-gmap-scraper
+Environment="PATH=/home/indatech/Documents/BOT/portalonline-gmap-scraper/.venv/bin:/usr/bin"
+Environment="ADMIN_API_KEY=change-me-in-production"
+Environment="API_HOST=0.0.0.0"
+Environment="API_PORT=9988"
+Environment="LOG_LEVEL=INFO"
+ExecStart=/home/indatech/Documents/BOT/portalonline-gmap-scraper/.venv/bin/python -m portalonline_gmap_scraper.server
+Restart=on-failure
+RestartSec=10
+StandardOutput=append:/var/log/portalonline-gmap-scraper/api.log
+StandardError=append:/var/log/portalonline-gmap-scraper/api-error.log
+
+[Install]
+WantedBy=multi-user.target

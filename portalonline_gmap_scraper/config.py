@@ -54,6 +54,18 @@ CSV_FILENAME = "scraped_data.csv"
 # Development Settings
 DEBUG = os.getenv("DEBUG", "false").lower() == "true"
 
+# --- Backend API config ---
+MAX_JOB_DURATION_MINUTES = int(os.getenv("MAX_JOB_DURATION_MINUTES", "30"))
+MAX_TARGET_PER_JOB = int(os.getenv("MAX_TARGET_PER_JOB", "500"))
+DATA_DIR = os.getenv("DATA_DIR", "data")
+CORS_ORIGINS = os.getenv("CORS_ORIGINS", "*")
+DISK_USAGE_WARN_PERCENT = int(os.getenv("DISK_USAGE_WARN_PERCENT", "80"))
+DISK_USAGE_LIMIT_PERCENT = int(os.getenv("DISK_USAGE_LIMIT_PERCENT", "90"))
+LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
+DATA_RETENTION_DAYS = int(os.getenv("DATA_RETENTION_DAYS", "90"))
+AUTO_CLEANUP_HOUR = int(os.getenv("AUTO_CLEANUP_HOUR", "3"))
+
+
 # API Server Settings
 API_HOST = os.getenv("API_HOST", "0.0.0.0")
 API_PORT = int(os.getenv("API_PORT", "9988"))
