@@ -77,6 +77,7 @@ class JobManager:
         )
 
     def get_progress(self, job_id: str) -> dict[str, Any] | None:
+        """Return in-memory progress dict for a job, or None if not tracked."""
         return self._progress.get(job_id)
 
     # --- Internal ---

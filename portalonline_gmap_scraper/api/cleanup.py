@@ -55,6 +55,7 @@ class CleanupScheduler:
 
 
 def get_cleanup_scheduler(db: aiosqlite.Connection) -> CleanupScheduler:
+    """Create a CleanupScheduler from env vars."""
     retention = int(os.getenv("DATA_RETENTION_DAYS", "90"))
     hour = int(os.getenv("AUTO_CLEANUP_HOUR", "3"))
     return CleanupScheduler(db, retention, hour)

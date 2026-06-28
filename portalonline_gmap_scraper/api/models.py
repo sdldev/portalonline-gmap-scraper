@@ -16,6 +16,7 @@ class UserCreate(BaseModel):
     @field_validator("username")
     @classmethod
     def validate_username(cls, v: str) -> str:
+        """Validate: only a-z, 0-9, underscore. Max 50 chars."""
         v = v.strip()
         if not re.match(r"^[a-z0-9_]+$", v):
             raise ValueError("username: only a-z, 0-9, underscore allowed")
@@ -64,6 +65,7 @@ class JobCreate(BaseModel):
     @field_validator("keyword")
     @classmethod
     def validate_keyword(cls, v: str) -> str:
+        """Sanitize: strip blocked chars, trim whitespace. Max 200 chars."""
         v = v.strip()
         blocked = ["<", ">", "\"", "\'", ";", "--", "/*", "*/"]
         for c in blocked:
@@ -75,6 +77,7 @@ class JobCreate(BaseModel):
     @field_validator("location")
     @classmethod
     def validate_location(cls, v: str | None) -> str | None:
+        """Sanitize: strip blocked chars. Returns None if empty. Max 100 chars."""
         if v is None:
             return v
         v = v.strip()
@@ -86,6 +89,7 @@ class JobCreate(BaseModel):
     @field_validator("category_variations")
     @classmethod
     def validate_variations(cls, v: list[str] | None) -> list[str] | None:
+        """Validate: max 10 items, each max 100 chars."""
         if v is None:
             return v
         if len(v) > 10:

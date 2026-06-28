@@ -41,6 +41,7 @@ async def get_config(
     request: Request,
     admin: dict = Depends(require_admin),
 ):
+    """GET /api/v1/config (admin)."""
     cfg = _read_config()
     cfg.update(_config_overrides)
     return cfg
@@ -53,6 +54,7 @@ async def update_config(
     admin: dict = Depends(require_admin),
     db=Depends(get_db),
 ):
+    """PATCH /api/v1/config (admin)."""
     updates = body.model_dump(exclude_none=True)
     for key, value in updates.items():
         _config_overrides[key] = value

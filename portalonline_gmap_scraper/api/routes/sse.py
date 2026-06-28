@@ -22,6 +22,7 @@ async def stream_job_progress(
     user: dict = Depends(require_user),
     db=Depends(get_db),
 ):
+    """GET /api/v1/jobs/{id}/stream - SSE events."""
     job = await get_job(db, job_id)
     if job is None:
         raise HTTPException(404, "Job not found")
@@ -33,6 +34,7 @@ async def stream_job_progress(
     manager = get_job_manager(request)
 
     async def event_stream():
+        """Async generator: heartbeat, status_change, completed."""
         last_status = job["status"]
         yield f"data: {json.dumps({'event': 'connected', 'job_id': job_id})}\n\n"
 
@@ -43,7 +45,15 @@ async def stream_job_progress(
 
             new_status = current["status"]
             if new_status != last_status:
-                yield f"data: {json.dumps({'event': 'status_change', 'old': last_status, 'new': new_status})}\n\n"
+                yield (
+                    "data: "
+                    + json.dumps({
+                        "event": "status_change",
+                        "old": last_status,
+                        "new": new_status,
+                    })
+                    + "\n\n"
+                )
                 last_status = new_status
 
             progress = manager.get_progress(job_id)
@@ -51,7 +61,11 @@ async def stream_job_progress(
                 yield f"data: {json.dumps({'event': 'progress', **progress})}\n\n"
 
             if new_status in ("completed", "failed", "cancelled"):
-                yield f"data: {json.dumps({'event': 'completed', 'status': new_status})}\n\n"
+                yield (
+                    "data: "
+                    + json.dumps({"event": "completed", "status": new_status})
+                    + "\n\n"
+                )
                 break
 
             yield f"data: {json.dumps({'event': 'heartbeat'})}\n\n"

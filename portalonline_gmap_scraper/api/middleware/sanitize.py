@@ -50,4 +50,5 @@ class SanitizeMiddleware(BaseHTTPMiddleware):
     """
 
     async def dispatch(self, request: Request, call_next):
+        """Pass-through middleware. Pydantic validators handle sanitization."""
         return await call_next(request)

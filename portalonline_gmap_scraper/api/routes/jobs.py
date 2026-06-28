@@ -27,6 +27,7 @@ async def create_job_route(
     user: dict = Depends(require_user),
     db=Depends(get_db),
 ):
+    """POST /api/v1/jobs - Submit scraping job."""
     manager = get_job_manager(request)
     result = await manager.submit(request.state.user_id, body.model_dump())
     if isinstance(result, dict) and "error" in result:
@@ -52,6 +53,7 @@ async def list_jobs_route(
     user: dict = Depends(require_user),
     db=Depends(get_db),
 ):
+    """GET /api/v1/jobs - List jobs with filters."""
     is_admin = request.state.user_role == "admin"
     filter_uid = user_id if is_admin and user_id else (
         None if is_admin else request.state.user_id
@@ -67,6 +69,7 @@ async def get_job_route(
     user: dict = Depends(require_user),
     db=Depends(get_db),
 ):
+    """GET /api/v1/jobs/{id} - Job detail."""
     job = await get_job(db, job_id)
     if job is None:
         raise HTTPException(404, "Job not found")
@@ -83,6 +86,7 @@ async def cancel_job_route(
     user: dict = Depends(require_user),
     db=Depends(get_db),
 ):
+    """DELETE /api/v1/jobs/{id} - Cancel job."""
     job = await get_job(db, job_id)
     if job is None:
         raise HTTPException(404, "Job not found")
@@ -102,6 +106,7 @@ async def get_job_results(
     user: dict = Depends(require_user),
     db=Depends(get_db),
 ):
+    """GET /api/v1/jobs/{id}/results - JSON or CSV."""
     job = await get_job(db, job_id)
     if job is None:
         raise HTTPException(404, "Job not found")

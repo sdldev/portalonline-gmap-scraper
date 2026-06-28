@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 async def get_db(request: Request) -> aiosqlite.Connection:
+    """Dependency returning the aiosqlite connection from app state."""
     return request.app.state.db
 
 

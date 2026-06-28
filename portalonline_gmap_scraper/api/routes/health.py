@@ -19,6 +19,7 @@ _start_time = time.time()
 
 @router.get("/api/v1/health", response_model=HealthResponse)
 async def health_check(db=Depends(get_db)):
+    """GET /api/v1/health - DB ping, 200 or 503."""
     try:
         await db.execute("SELECT 1")
         db_ok = True
@@ -39,6 +40,7 @@ async def system_info(
     user: dict = Depends(require_user),
     db=Depends(get_db),
 ):
+    """GET /api/v1/system - RAM, CPU, disk, jobs."""
     mem = psutil.virtual_memory()
     disk = psutil.disk_usage(".")
     cpu = psutil.cpu_percent(interval=0.1)

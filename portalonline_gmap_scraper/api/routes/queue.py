@@ -24,6 +24,7 @@ async def view_queue(
     user: dict = Depends(require_user),
     db=Depends(get_db),
 ):
+    """GET /api/v1/queue - Queue status."""
     is_admin = request.state.user_role == "admin"
     uid = None if is_admin else request.state.user_id
     return await get_queue(db, user_id=uid)
@@ -36,6 +37,7 @@ async def reorder_queue_item(
     admin: dict = Depends(require_admin),
     db=Depends(get_db),
 ):
+    """PATCH /api/v1/queue/{id} - Reorder (admin)."""
     body = await request.json()
     position = body.get("position")
     if position is None or not isinstance(position, int) or position < 1:
@@ -57,6 +59,7 @@ async def remove_from_queue(
     admin: dict = Depends(require_admin),
     db=Depends(get_db),
 ):
+    """DELETE /api/v1/queue/{id} - Remove (admin)."""
     job = await get_job(db, job_id)
     if job is None:
         raise HTTPException(404, "Job not found")

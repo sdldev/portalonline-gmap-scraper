@@ -119,6 +119,7 @@ async def create_user(
     role: str = "user",
     api_key: str | None = None,
 ) -> dict[str, Any]:
+    """Create a new user with auto-generated ID and API key."""
     user_id = _uid()
     key = api_key or f"pk_{_uid()}{_uid()}"
     now = _now()
@@ -137,6 +138,7 @@ async def create_user(
 async def get_user_by_api_key(
     db: aiosqlite.Connection, api_key: str
 ) -> dict[str, Any] | None:
+    """Look up a user by their API key. Returns None if not found."""
     async with db.execute(
         "SELECT user_id, username, role, api_key, active, webhook_url, "
         "webhook_events, created_at FROM users WHERE api_key = ?",
@@ -151,6 +153,7 @@ async def get_user_by_api_key(
 async def get_user_by_id(
     db: aiosqlite.Connection, user_id: str
 ) -> dict[str, Any] | None:
+    """Look up a user by their unique ID. Returns None if not found."""
     async with db.execute(
         "SELECT user_id, username, role, api_key, active, webhook_url, "
         "webhook_events, created_at FROM users WHERE user_id = ?",
@@ -163,6 +166,7 @@ async def get_user_by_id(
 
 
 async def list_users(db: aiosqlite.Connection) -> list[dict[str, Any]]:
+    """Return all users ordered by creation date (newest first)."""
     async with db.execute(
         "SELECT user_id, username, role, api_key, active, webhook_url, "
         "webhook_events, created_at FROM users ORDER BY created_at DESC"
@@ -180,6 +184,7 @@ async def update_user(
     webhook_url: str | None = None,
     webhook_events: str | None = None,
 ) -> dict[str, Any] | None:
+    """Partially update user fields (username, role, active, webhook)."""
     fields = []
     values: list[Any] = []
     if username is not None:
@@ -208,6 +213,7 @@ async def update_user(
 
 
 async def delete_user(db: aiosqlite.Connection, user_id: str) -> bool:
+    """Delete a user by ID. Returns True if deleted, False if not found."""
     cursor = await db.execute("DELETE FROM users WHERE user_id = ?", (user_id,))
     await db.commit()
     return cursor.rowcount > 0
@@ -235,6 +241,7 @@ async def create_job(
     smart: bool = True,
     queue_position: int | None = None,
 ) -> dict[str, Any]:
+    """Create a new scraping job with queued status and optional queue position."""
     job_id = _uid()
     now = _now()
     await db.execute(
@@ -249,6 +256,7 @@ async def create_job(
 
 
 async def get_job(db: aiosqlite.Connection, job_id: str) -> dict[str, Any] | None:
+    """Fetch a job by ID, including the owner username via JOIN."""
     async with db.execute(
         "SELECT j.job_id, j.user_id, u.username, j.keyword, j.location, j.query, "
         "j.status, j.target, j.smart, j.queue_position, j.leads_collected, "
@@ -270,6 +278,7 @@ async def list_jobs(
     page: int = 1,
     limit: int = 20,
 ) -> dict[str, Any]:
+    """List jobs with pagination, user isolation, and optional filters."""
     conditions = []
     params: list[Any] = []
     if user_id:
@@ -317,6 +326,7 @@ async def update_job_status(
     leads_collected: int | None = None,
     leads_total: int | None = None,
 ) -> None:
+    """Update job status with optional error, lead counts, and timestamps."""
     fields = ["status = ?"]
     values: list[Any] = [status]
     if error is not None:
@@ -342,6 +352,7 @@ async def update_job_status(
 
 
 async def cancel_job(db: aiosqlite.Connection, job_id: str) -> dict[str, Any] | None:
+    """Cancel a job by setting status to cancelled."""
     job = await get_job(db, job_id)
     if job is None:
         return None
@@ -400,6 +411,7 @@ async def insert_leads_batch(
 async def get_leads_by_job(
     db: aiosqlite.Connection, job_id: str
 ) -> list[dict[str, Any]]:
+    """Return all leads belonging to a specific job, ordered by ID."""
     async with db.execute(
         "SELECT id, job_id, user_id, keyword, name, address, phone, website, "
         "rating, review_count, scraped_at FROM leads WHERE job_id = ? "
@@ -423,6 +435,7 @@ async def get_leads_by_user(
     page: int = 1,
     limit: int = 50,
 ) -> dict[str, Any]:
+    """Query leads with filters (keyword, phone, rating, search) and pagination."""
     conditions = ["l.user_id = ?"]
     params: list[Any] = [user_id]
     if keyword:
@@ -472,6 +485,7 @@ async def get_leads_by_user(
 async def get_lead_stats(
     db: aiosqlite.Connection, user_id: str
 ) -> dict[str, Any]:
+    """Return aggregate stats: total leads, unique keywords, phone/website coverage."""
     async with db.execute(
         "SELECT "
         "COUNT(*) as total_leads, "
@@ -519,6 +533,7 @@ async def log_audit(
     details: str | None = None,
     ip_address: str | None = None,
 ) -> None:
+    """Write an audit log entry with user, action, target, and optional IP."""
     await db.execute(
         "INSERT INTO audit_logs (user_id, action, target_type, target_id, "
         "details, ip_address, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
@@ -537,6 +552,7 @@ async def get_audit_logs(
     page: int = 1,
     limit: int = 50,
 ) -> dict[str, Any]:
+    """Fetch audit logs with filters (user, action, date range) and pagination."""
     conditions = []
     params: list[Any] = []
     if user_id:
@@ -594,6 +610,7 @@ def _row_to_audit(row: tuple) -> dict[str, Any]:
 async def get_queue(
     db: aiosqlite.Connection, user_id: str | None = None
 ) -> dict[str, Any]:
+    """Return active job and queued jobs, optionally filtered by user."""
     if user_id:
         async with db.execute(
             "SELECT j.job_id, j.user_id, u.username, j.keyword, j.location, "
@@ -630,6 +647,7 @@ async def get_queue(
 
 
 async def get_next_queued(db: aiosqlite.Connection) -> dict[str, Any] | None:
+    """Return the next queued job (lowest queue_position) or None."""
     async with db.execute(
         "SELECT j.job_id, j.user_id, u.username, j.keyword, j.location, "
         "j.query, j.status, j.target, j.smart, j.queue_position, "
@@ -645,6 +663,7 @@ async def get_next_queued(db: aiosqlite.Connection) -> dict[str, Any] | None:
 
 
 async def get_queue_position(db: aiosqlite.Connection) -> int:
+    """Return the next available queue position (MAX + 1) for queued jobs."""
     async with db.execute(
         "SELECT COALESCE(MAX(queue_position), 0) + 1 FROM jobs "
         "WHERE status = 'queued'"
@@ -654,6 +673,7 @@ async def get_queue_position(db: aiosqlite.Connection) -> int:
 
 
 async def reindex_queue(db: aiosqlite.Connection) -> None:
+    """Reassign sequential queue positions to all queued jobs."""
     async with db.execute(
         "SELECT job_id FROM jobs WHERE status = 'queued' "
         "ORDER BY queue_position ASC"
@@ -668,6 +688,7 @@ async def reindex_queue(db: aiosqlite.Connection) -> None:
 
 
 async def get_db_stats(db: aiosqlite.Connection) -> dict[str, Any]:
+    """Return database stats: row counts, file size, path."""
     tables = ["users", "jobs", "leads", "audit_logs"]
     stats: dict[str, int] = {}
     for table in tables:

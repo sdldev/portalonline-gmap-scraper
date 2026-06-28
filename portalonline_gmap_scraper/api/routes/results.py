@@ -31,6 +31,7 @@ async def list_results(
     user: dict = Depends(require_user),
     db=Depends(get_db),
 ):
+    """GET /api/v1/results - Leads with filters."""
     is_admin = request.state.user_role == "admin"
     uid = None if is_admin else request.state.user_id
     return await get_leads_by_user(
@@ -47,6 +48,7 @@ async def results_stats(
     user: dict = Depends(require_user),
     db=Depends(get_db),
 ):
+    """GET /api/v1/results/stats - Aggregates."""
     is_admin = request.state.user_role == "admin"
     uid = None if is_admin else request.state.user_id
     if uid is None:
@@ -63,6 +65,7 @@ async def export_results(
     user: dict = Depends(require_user),
     db=Depends(get_db),
 ):
+    """GET /api/v1/results/export - CSV or JSON."""
     is_admin = request.state.user_role == "admin"
     uid = None if is_admin else request.state.user_id
     if uid is None:
@@ -96,6 +99,7 @@ async def search_results(
     user: dict = Depends(require_user),
     db=Depends(get_db),
 ):
+    """GET /api/v1/results/search - Full-text."""
     is_admin = request.state.user_role == "admin"
     uid = None if is_admin else request.state.user_id
     if uid is None:
@@ -110,6 +114,7 @@ async def get_result(
     user: dict = Depends(require_user),
     db=Depends(get_db),
 ):
+    """GET /api/v1/results/{id} - Single lead."""
     is_admin = request.state.user_role == "admin"
     cursor = await db.execute(
         "SELECT id, job_id, user_id, keyword, name, address, phone, website, "

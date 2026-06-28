@@ -31,6 +31,7 @@ async def list_audit_logs(
     admin: dict = Depends(require_admin),
     db=Depends(get_db),
 ):
+    """GET /api/v1/admin/audit-logs (admin)."""
     return await get_audit_logs(
         db, user_id=user_id, action=action, target_type=target_type,
         from_date=from_date, to_date=to_date, page=page, limit=limit,
@@ -44,6 +45,7 @@ async def trigger_cleanup(
     admin: dict = Depends(require_admin),
     db=Depends(get_db),
 ):
+    """POST /api/v1/admin/cleanup (admin)."""
     return await run_cleanup(db, older_than_days=body.older_than_days)
 
 
@@ -53,4 +55,5 @@ async def db_stats(
     admin: dict = Depends(require_admin),
     db=Depends(get_db),
 ):
+    """GET /api/v1/admin/db-stats (admin)."""
     return await get_db_stats(db)

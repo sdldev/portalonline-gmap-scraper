@@ -80,6 +80,7 @@ _webhook_service: WebhookService | None = None
 
 
 def get_webhook_service() -> WebhookService:
+    """Return the global WebhookService singleton."""
     global _webhook_service
     if _webhook_service is None:
         _webhook_service = WebhookService()

@@ -31,6 +31,7 @@ _cleanup_scheduler: CleanupScheduler | None = None
 
 
 def get_job_manager() -> JobManager:
+    """Return the global JobManager singleton."""
     if _job_manager is None:
         raise RuntimeError("JobManager not initialized")
     return _job_manager
@@ -98,6 +99,7 @@ async def _recover_orphan_jobs(db) -> None:
 
 
 def create_app() -> FastAPI:
+    """Create and configure the FastAPI application with all routes."""
     app = FastAPI(
         title="PortalOnline GMap Scraper API",
         version="0.1.0",

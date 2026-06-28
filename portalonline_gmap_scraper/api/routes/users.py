@@ -21,6 +21,7 @@ async def create_user_route(
     admin: dict = Depends(require_admin),
     db=Depends(get_db),
 ):
+    """POST /api/v1/users - Create user (admin)."""
     user = await create_user(db, body.username, role=body.role)
     return user
 
@@ -31,6 +32,7 @@ async def list_users_route(
     admin: dict = Depends(require_admin),
     db=Depends(get_db),
 ):
+    """GET /api/v1/users - List users (admin)."""
     return await list_users(db)
 
 
@@ -40,6 +42,7 @@ async def get_me(
     user: dict = Depends(require_user),
     db=Depends(get_db),
 ):
+    """GET /api/v1/users/me - Own profile."""
     result = await get_user_by_id(db, request.state.user_id)
     if result is None:
         raise HTTPException(status_code=404, detail="User not found")
@@ -53,6 +56,7 @@ async def get_user_route(
     admin: dict = Depends(require_admin),
     db=Depends(get_db),
 ):
+    """GET /api/v1/users/{id} - User detail (admin)."""
     user = await get_user_by_id(db, user_id)
     if user is None:
         raise HTTPException(404, "User not found")
@@ -67,6 +71,7 @@ async def update_user_route(
     admin: dict = Depends(require_admin),
     db=Depends(get_db),
 ):
+    """PATCH /api/v1/users/{id} - Update user (admin)."""
     user = await get_user_by_id(db, user_id)
     if user is None:
         raise HTTPException(404, "User not found")
@@ -88,6 +93,7 @@ async def delete_user_route(
     admin: dict = Depends(require_admin),
     db=Depends(get_db),
 ):
+    """DELETE /api/v1/users/{id} - Delete user (admin)."""
     deleted = await delete_user(db, user_id)
     if not deleted:
         raise HTTPException(404, "User not found")

@@ -55,6 +55,7 @@ _rate_limiter: RateLimiter | None = None
 
 
 def get_rate_limiter() -> RateLimiter:
+    """Return the global RateLimiter singleton."""
     global _rate_limiter
     if _rate_limiter is None:
         _rate_limiter = RateLimiter()
