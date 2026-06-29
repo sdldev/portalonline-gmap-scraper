@@ -170,12 +170,17 @@ All runtime settings are in `.env` (loaded by `config.py`). Key variables:
 ## Coding Standards & Rules
 Follow the conventions documented in:
 - `.factory/rules/python.md` - Python and Async patterns
-- `.factory/rules/testing.md` - Pytest and Mocking conventions
+- `.factory/rules/python-testing.md` - Pytest and Mocking conventions
+- `.factory/rules/frontend.md` - Vue 3, TypeScript, TailwindCSS conventions
+- `.factory/rules/frontend-testing.md` - Playwright E2E testing conventions
 - `.factory/rules/security.md` - Secrets, resource safety, and crawler footprints
 - `.factory/rules/code-quality.md` - Code length limits, splitting rules, best practices
 
 ## Token Efficiency & Validation (Hooks)
-- The project has **automatic PostToolUse hooks** enabled (`format.sh`, `test-on-edit.sh`, `scan-secrets.sh`).
+- The project has automatic hooks that run on file edits:
+  - **PreToolUse**: `protect-files.sh` blocks edits to protected files (`.env`, lock files, `.git`, `.venv`, `node_modules/`, `dist/`)
+  - **PostToolUse**: `format.sh` formats/lints Python (Ruff) + type-checks frontend (vue-tsc), `test-on-edit.sh` runs pytest, `scan-secrets.sh` detects hardcoded credentials
+  - **Stop**: `docs-coverage.py` reports Python docstring coverage (production code only, 100% target) + frontend component stats
 - **You do NOT need to manually run `ruff` or `pytest`** after editing a file, as the hooks will run them automatically and verify your changes in the same turn.
 - To save tokens, avoid exploring the filesystem extensively if you can use the IDE plugin context. Always start by reading the specific file mentioned.
 - If you need a fast smoke test manually, run: `pytest tests/ -v --maxfail=1`.
