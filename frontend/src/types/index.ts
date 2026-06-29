@@ -26,6 +26,14 @@ export interface DashboardStats {
   recent_jobs: RecentJob[]
 }
 
+export interface StatsCounts {
+  total_users: number
+  total_jobs: number
+  total_leads: number
+  active_jobs: number
+  queued_jobs: number
+}
+
 export interface RecentJob {
   job_id: string
   keyword: string
@@ -109,6 +117,7 @@ export interface JobCreatePayload {
 export interface UserCreatePayload {
   username: string
   role?: string
+  password?: string
 }
 
 export interface UserUpdatePayload {

@@ -13,7 +13,13 @@ from api.models import (
     CleanupResponse,
     DbStatsResponse,
 )
-from api.store import get_audit_logs, get_dashboard_stats, get_db_stats, run_cleanup
+from api.store import (
+    get_audit_logs,
+    get_dashboard_stats,
+    get_db_stats,
+    get_stats_counts,
+    run_cleanup,
+)
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1/admin", tags=["admin"])
@@ -34,8 +40,14 @@ async def list_audit_logs(
 ):
     """GET /api/v1/admin/audit-logs (admin)."""
     return await get_audit_logs(
-        db, user_id=user_id, action=action, target_type=target_type,
-        from_date=from_date, to_date=to_date, page=page, limit=limit,
+        db,
+        user_id=user_id,
+        action=action,
+        target_type=target_type,
+        from_date=from_date,
+        to_date=to_date,
+        page=page,
+        limit=limit,
     )
 
 
@@ -77,3 +89,21 @@ async def dashboard_stats(
 ):
     """GET /api/v1/admin/stats - Dashboard aggregate counts."""
     return await get_dashboard_stats(db)
+
+
+class StatsCountsResponse(BaseModel):
+    total_users: int
+    total_jobs: int
+    total_leads: int
+    active_jobs: int
+    queued_jobs: int
+
+
+@router.get("/stats/counts", response_model=StatsCountsResponse)
+async def stats_counts(
+    request: Request,
+    admin: dict = Depends(require_admin),
+    db=Depends(get_db),
+):
+    """GET /api/v1/admin/stats/counts - Lightweight counts without recent_jobs."""
+    return await get_stats_counts(db)

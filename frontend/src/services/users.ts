@@ -28,6 +28,11 @@ export async function deleteUser(userId: string): Promise<void> {
   await api.delete(`/users/${userId}`)
 }
 
+export async function updatePassword(userId: string, password: string): Promise<{ success: boolean }> {
+  const { data } = await api.put(`/users/${userId}/update-password`, { password })
+  return data
+}
+
 export async function generatePassword(userId: string): Promise<{ success: boolean; password: string }> {
   const { data } = await api.post(`/users/${userId}/generate-password`)
   return data

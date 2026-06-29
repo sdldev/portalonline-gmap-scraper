@@ -2,6 +2,9 @@
 import { ref, watch } from "vue"
 import BaseModal from "@/components/ui/BaseModal.vue"
 import BaseButton from "@/components/ui/BaseButton.vue"
+import BaseInput from "@/components/ui/BaseInput.vue"
+import BaseSelect from "@/components/ui/BaseSelect.vue"
+import AlertBanner from "@/components/ui/AlertBanner.vue"
 import { updateUser } from "@/services/users"
 import type { UserResponse } from "@/types"
 
@@ -17,6 +20,11 @@ const role = ref("user")
 const active = ref(true)
 const loading = ref(false)
 const error = ref<string | null>(null)
+
+const roleOptions = [
+  { value: "user", label: "User" },
+  { value: "admin", label: "Admin" },
+]
 
 watch(
   () => [props.open, props.user],
@@ -50,28 +58,9 @@ async function handleUpdate() {
 <template>
   <BaseModal :open="open" title="Edit User" @close="emit('close')">
     <form v-if="user" @submit.prevent="handleUpdate" class="space-y-4">
-      <div v-if="error" class="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
-        {{ error }}
-      </div>
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
-        <input
-          v-model="username"
-          type="text"
-          required
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-        />
-      </div>
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Role</label>
-        <select
-          v-model="role"
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-        >
-          <option value="user">User</option>
-          <option value="admin">Admin</option>
-        </select>
-      </div>
+      <AlertBanner v-if="error" variant="error" :message="error" />
+      <BaseInput v-model="username" label="Username" required />
+      <BaseSelect v-model="role" label="Role" :options="roleOptions" />
       <div class="flex items-center gap-2">
         <input id="active-toggle" v-model="active" type="checkbox" class="rounded" />
         <label for="active-toggle" class="text-sm text-gray-700">Active</label>

@@ -34,9 +34,33 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
+      path: "/results/:id",
+      name: "job-detail",
+      component: () => import("@/pages/JobDetailPage.vue"),
+      meta: { requiresAuth: true },
+    },
+    {
       path: "/users",
       name: "users",
       component: () => import("@/pages/UsersPage.vue"),
+      meta: { requiresAuth: true, requiresAdmin: true },
+    },
+    {
+      path: "/users/new",
+      name: "user-create",
+      component: () => import("@/pages/CreateUserPage.vue"),
+      meta: { requiresAuth: true, requiresAdmin: true },
+    },
+    {
+      path: "/users/:id",
+      name: "user-detail",
+      component: () => import("@/pages/UserDetailPage.vue"),
+      meta: { requiresAuth: true, requiresAdmin: true },
+    },
+    {
+      path: "/users/:id/edit",
+      name: "user-edit",
+      component: () => import("@/pages/UserEditPage.vue"),
       meta: { requiresAuth: true, requiresAdmin: true },
     },
     {

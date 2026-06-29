@@ -1,5 +1,5 @@
 import api from "./api"
-import type { DashboardStats, LoginResponse } from "@/types"
+import type { DashboardStats, LoginResponse, StatsCounts } from "@/types"
 
 export async function login(username: string, password: string): Promise<LoginResponse> {
   const { data } = await api.post("/auth/login", { username, password })
@@ -12,5 +12,10 @@ export async function logout(): Promise<void> {
 
 export async function getStats(): Promise<DashboardStats> {
   const { data } = await api.get("/admin/stats")
+  return data
+}
+
+export async function getStatsCounts(): Promise<StatsCounts> {
+  const { data } = await api.get("/admin/stats/counts")
   return data
 }

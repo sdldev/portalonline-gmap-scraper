@@ -1,108 +1,132 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from "vue"
+import { ref, onMounted } from "vue"
 import { useAuthStore } from "@/stores/auth"
-import { getStats } from "@/services/auth"
+import { getStatsCounts } from "@/services/auth"
 import { listJobs } from "@/services/jobs"
 import StatCard from "@/components/dashboard/StatCard.vue"
 import RecentJobsTable from "@/components/dashboard/RecentJobsTable.vue"
 import BaseButton from "@/components/ui/BaseButton.vue"
-import type { DashboardStats, RecentJob } from "@/types"
+import BaseCard from "@/components/ui/BaseCard.vue"
+import AlertBanner from "@/components/ui/AlertBanner.vue"
+import PageHeader from "@/components/ui/PageHeader.vue"
+import SkeletonLoader from "@/components/ui/SkeletonLoader.vue"
+import EmptyState from "@/components/ui/EmptyState.vue"
+import TablePagination from "@/components/ui/TablePagination.vue"
+import type { RecentJob, StatsCounts } from "@/types"
 
 const auth = useAuthStore()
 const loading = ref(true)
 const error = ref<string | null>(null)
-const stats = ref<DashboardStats | null>(null)
+const counts = ref<StatsCounts>({
+  total_users: 0,
+  total_jobs: 0,
+  total_leads: 0,
+  active_jobs: 0,
+  queued_jobs: 0,
+})
+const recentJobs = ref<RecentJob[]>([])
+const page = ref(1)
+const totalPages = ref(1)
 
-onMounted(async () => {
+async function loadDashboard(p = 1) {
+  loading.value = true
+  error.value = null
   try {
     if (auth.isAdmin) {
-      stats.value = await getStats()
+      const [countsResult, jobsResult] = await Promise.all([
+        getStatsCounts(),
+        listJobs({ page: p, limit: 10 }),
+      ])
+      counts.value = countsResult
+      recentJobs.value = jobsResult.jobs.map(j => ({
+        job_id: j.job_id,
+        keyword: j.keyword,
+        location: j.location,
+        status: j.status,
+        leads_collected: j.leads_collected,
+        leads_total: j.leads_total,
+        created_at: j.created_at,
+      })) as RecentJob[]
+      totalPages.value = jobsResult.pages
     } else {
-      const jobsPage = await listJobs({ limit: 10 })
-      stats.value = {
+      const jobsResult = await listJobs({ page: p, limit: 10 })
+      counts.value = {
         total_users: 0,
-        total_jobs: jobsPage.total,
+        total_jobs: jobsResult.total,
         total_leads: 0,
-        active_jobs: jobsPage.jobs.filter(j => j.status === "running").length,
-        queued_jobs: jobsPage.jobs.filter(j => j.status === "queued").length,
-        recent_jobs: jobsPage.jobs.slice(0, 10).map(j => ({
-          job_id: j.job_id,
-          keyword: j.keyword,
-          location: j.location,
-          status: j.status,
-          leads_collected: j.leads_collected,
-          leads_total: j.leads_total,
-          created_at: j.created_at,
-        })) as RecentJob[],
+        active_jobs: 0,
+        queued_jobs: 0,
       }
+      recentJobs.value = jobsResult.jobs.map(j => ({
+        job_id: j.job_id,
+        keyword: j.keyword,
+        location: j.location,
+        status: j.status,
+        leads_collected: j.leads_collected,
+        leads_total: j.leads_total,
+        created_at: j.created_at,
+      })) as RecentJob[]
+      totalPages.value = jobsResult.pages
     }
+    page.value = p
   } catch (e: any) {
     error.value = e.response?.data?.detail || "Failed to load dashboard"
   } finally {
     loading.value = false
   }
-})
-
-async function retry() {
-  error.value = null
-  loading.value = true
-  // trigger onMounted again by reloading
-  window.location.reload()
 }
+
+function handlePageChange(newPage: number) {
+  loadDashboard(newPage)
+}
+
+onMounted(() => loadDashboard())
 </script>
 
 <template>
   <div>
-    <h2 class="text-xl font-bold text-gray-900 mb-6">Dashboard</h2>
+    <PageHeader title="Dashboard" subtitle="Overview of your scraping activity" />
 
-    <!-- Error -->
-    <div
-      v-if="error"
-      class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center justify-between"
-    >
-      <span class="text-sm text-red-700">{{ error }}</span>
-      <BaseButton variant="secondary" size="sm" @click="retry">Retry</BaseButton>
-    </div>
+    <AlertBanner v-if="error" variant="error" class="mb-4">
+      {{ error }}
+      <BaseButton variant="secondary" size="sm" class="ml-2" @click="loadDashboard()">Retry</BaseButton>
+    </AlertBanner>
 
-    <!-- Loading -->
-    <div v-if="loading" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-      <div v-for="i in 3" :key="i" class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 animate-pulse">
-        <div class="h-4 bg-gray-200 rounded w-1/3 mb-2" />
-        <div class="h-8 bg-gray-200 rounded w-1/2" />
+    <template v-if="loading && !error">
+      <BaseCard padding="p-0">
+        <SkeletonLoader :rows="5" height="h-20" />
+      </BaseCard>
+    </template>
+
+    <template v-else-if="counts">
+      <!-- Stat Cards -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <StatCard label="Total Jobs" :value="counts.total_jobs" />
+        <StatCard label="Total Leads" :value="counts.total_leads" />
+        <StatCard label="Active Jobs" :value="counts.active_jobs" />
+        <StatCard label="Queued Jobs" :value="counts.queued_jobs" />
+        <StatCard v-if="auth.isAdmin" label="Total Users" :value="counts.total_users" />
       </div>
-    </div>
 
-    <!-- Stats -->
-    <div v-if="stats && !loading" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-      <StatCard
-        v-if="auth.isAdmin"
-        label="Total Users"
-        :value="stats.total_users"
-      />
-      <StatCard
-        label="Total Jobs"
-        :value="stats.total_jobs"
-      />
-      <StatCard
-        label="Total Leads"
-        :value="stats.total_leads"
-      />
-    </div>
-
-    <!-- Active/queued indicators -->
-    <div v-if="stats && !loading" class="flex gap-4 mb-6">
-      <div class="bg-blue-50 text-blue-700 px-4 py-2 rounded-lg text-sm font-medium">
-        Active: {{ stats.active_jobs }}
-      </div>
-      <div class="bg-amber-50 text-amber-700 px-4 py-2 rounded-lg text-sm font-medium">
-        Queued: {{ stats.queued_jobs }}
-      </div>
-    </div>
-
-    <!-- Recent Jobs -->
-    <div v-if="stats && !loading" class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-      <h3 class="text-lg font-semibold text-gray-900 mb-4">Recent Jobs</h3>
-      <RecentJobsTable :jobs="stats.recent_jobs" :loading="false" />
-    </div>
+      <!-- Recent Jobs -->
+      <BaseCard>
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Recent Jobs</h3>
+        <RecentJobsTable
+          v-if="recentJobs.length > 0"
+          :jobs="recentJobs"
+          :loading="false"
+        />
+        <EmptyState
+          v-else
+          title="No jobs yet"
+          description="Start scraping from the Scrape page to see results here."
+        />
+        <TablePagination
+          :current-page="page"
+          :total-pages="totalPages"
+          @page-change="handlePageChange"
+        />
+      </BaseCard>
+    </template>
   </div>
 </template>

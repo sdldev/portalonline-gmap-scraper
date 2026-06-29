@@ -7,8 +7,9 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 
 from api.deps import get_db
 from api.middleware.auth import require_admin, require_user
-from api.models import UserCreate, UserResponse, UserUpdate
+from api.models import PasswordUpdate, UserCreate, UserResponse, UserUpdate
 from api.store import (
+    create_user_with_password,
     create_user,
     delete_user,
     generate_random_password,
@@ -31,7 +32,10 @@ async def create_user_route(
     db=Depends(get_db),
 ):
     """POST /api/v1/users - Create user (admin)."""
-    user = await create_user(db, body.username, role=body.role)
+    if body.password:
+        user = await create_user_with_password(db, body.username, body.password, role=body.role)
+    else:
+        user = await create_user(db, body.username, role=body.role)
     return user
 
 
@@ -85,7 +89,8 @@ async def update_user_route(
     if user is None:
         raise HTTPException(404, "User not found")
     updated = await update_user(
-        db, user_id,
+        db,
+        user_id,
         username=body.username,
         role=body.role,
         active=body.active,
@@ -126,6 +131,36 @@ async def generate_password_route(
 
     await log_audit_generate(db, user_id, request, "password")
     return {"success": True, "password": password}
+
+
+@router.put("/{user_id}/update-password")
+async def update_password_route(
+    user_id: str,
+    body: PasswordUpdate,
+    request: Request,
+    admin: dict = Depends(require_admin),
+    db=Depends(get_db),
+):
+    """PUT /api/v1/users/{id}/update-password - Set custom password."""
+    user = await get_user_by_id(db, user_id)
+    if user is None:
+        raise HTTPException(404, "User not found")
+
+    await update_user_password(db, user_id, body.password)
+
+    from api.store import log_audit
+
+    ip = request.client.host if request.client else None
+    await log_audit(
+        db,
+        user_id=request.state.user_id,
+        action="update_password",
+        target_type="user",
+        target_id=user_id,
+        details="Password updated by admin",
+        ip_address=ip,
+    )
+    return {"success": True}
 
 
 @router.post("/{user_id}/generate-api-key")

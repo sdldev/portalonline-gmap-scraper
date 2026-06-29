@@ -7,9 +7,11 @@ from pydantic import BaseModel, Field, field_validator
 
 # --- User Models ---
 
+
 class UserCreate(BaseModel):
     username: str = Field(..., min_length=1, max_length=50)
     role: str = Field(default="user")
+    password: str | None = Field(default=None, min_length=8, max_length=128)
     webhook_url: str | None = Field(default=None, max_length=500)
     webhook_events: list[str] | None = Field(default=None)
 
@@ -41,6 +43,18 @@ class UserUpdate(BaseModel):
         return v
 
 
+class PasswordUpdate(BaseModel):
+    password: str = Field(..., min_length=8, max_length=128)
+
+    @field_validator("password")
+    @classmethod
+    def validate_password(cls, v: str) -> str:
+        v = v.strip()
+        if len(v) < 8:
+            raise ValueError("password must be at least 8 characters")
+        return v
+
+
 class UserResponse(BaseModel):
     user_id: str
     username: str
@@ -53,6 +67,7 @@ class UserResponse(BaseModel):
 
 
 # --- Job Models ---
+
 
 class JobCreate(BaseModel):
     keyword: str = Field(..., min_length=1, max_length=200)
@@ -67,7 +82,7 @@ class JobCreate(BaseModel):
     def validate_keyword(cls, v: str) -> str:
         """Sanitize: strip blocked chars, trim whitespace. Max 200 chars."""
         v = v.strip()
-        blocked = ["<", ">", "\"", "\'", ";", "--", "/*", "*/"]
+        blocked = ["<", ">", '"', "'", ";", "--", "/*", "*/"]
         for c in blocked:
             v = v.replace(c, "")
         if not v:
@@ -81,7 +96,7 @@ class JobCreate(BaseModel):
         if v is None:
             return v
         v = v.strip()
-        blocked = ["<", ">", "\"", "\'", ";", "--", "/*", "*/"]
+        blocked = ["<", ">", '"', "'", ";", "--", "/*", "*/"]
         for c in blocked:
             v = v.replace(c, "")
         return v if v else None
@@ -133,6 +148,7 @@ class JobsPage(BaseModel):
 
 # --- Queue Models ---
 
+
 class QueuedItem(BaseModel):
     job_id: str
     user_id: str
@@ -164,6 +180,7 @@ class QueueStatus(BaseModel):
 
 # --- Lead Models ---
 
+
 class LeadResponse(BaseModel):
     id: int
     job_id: str
@@ -186,6 +203,7 @@ class LeadsPage(BaseModel):
 
 
 # --- Health & System Models ---
+
 
 class SystemInfo(BaseModel):
     ram_used_mb: float
@@ -210,6 +228,7 @@ class HealthResponse(BaseModel):
 
 # --- Audit Models ---
 
+
 class AuditLogResponse(BaseModel):
     id: int
     user_id: str
@@ -230,6 +249,7 @@ class AuditLogPage(BaseModel):
 
 
 # --- Config Models ---
+
 
 class ConfigResponse(BaseModel):
     batch_size: int
@@ -257,14 +277,14 @@ class ConfigUpdate(BaseModel):
 
 # --- Webhook Models ---
 
+
 class WebhookConfig(BaseModel):
     url: str = Field(..., max_length=500)
-    events: list[str] = Field(
-        default=["job.completed", "job.failed"]
-    )
+    events: list[str] = Field(default=["job.completed", "job.failed"])
 
 
 # --- Error Models ---
+
 
 class ErrorDetail(BaseModel):
     code: str
@@ -278,6 +298,7 @@ class ErrorResponse(BaseModel):
 
 
 # --- Cleanup / DB Stats Models ---
+
 
 class CleanupRequest(BaseModel):
     older_than_days: int = Field(default=30, ge=1, le=365)

@@ -40,5 +40,5 @@ export function getJobStreamUrl(token: string, jobId: string): string {
 
 
 export async function deleteJob(jobId: string): Promise<void> {
-  await api.delete(`/jobs/${jobId}`)
+  await api.delete(`/jobs/${jobId}/delete`)
 }

@@ -3,6 +3,8 @@ import { ref } from "vue"
 import { useRouter } from "vue-router"
 import { useAuthStore } from "@/stores/auth"
 import BaseButton from "@/components/ui/BaseButton.vue"
+import BaseInput from "@/components/ui/BaseInput.vue"
+import AlertBanner from "@/components/ui/AlertBanner.vue"
 
 const auth = useAuthStore()
 const router = useRouter()
@@ -36,42 +38,26 @@ async function handleSubmit() {
       </div>
 
       <form @submit.prevent="handleSubmit" class="space-y-4">
-        <!-- Error -->
-        <div
-          v-if="error"
-          class="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700"
-        >
-          {{ error }}
-        </div>
+        <AlertBanner v-if="error" variant="error" :message="error" />
 
-        <div>
-          <label for="username" class="block text-sm font-medium text-gray-700 mb-1">
-            Username
-          </label>
-          <input
-            id="username"
-            v-model="username"
-            type="text"
-            required
-            autofocus
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
-            placeholder="Enter your username"
-          />
-        </div>
+        <BaseInput
+          v-model="username"
+          id="username"
+          name="username"
+          label="Username"
+          required
+          placeholder="Enter your username"
+        />
 
-        <div>
-          <label for="password" class="block text-sm font-medium text-gray-700 mb-1">
-            Password
-          </label>
-          <input
-            id="password"
-            v-model="password"
-            type="password"
-            required
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
-            placeholder="Enter your password"
-          />
-        </div>
+        <BaseInput
+          v-model="password"
+          id="password"
+          name="password"
+          type="password"
+          label="Password"
+          required
+          placeholder="Enter your password"
+        />
 
         <BaseButton variant="primary" :loading="loading" type="submit" class="w-full">
           Sign In

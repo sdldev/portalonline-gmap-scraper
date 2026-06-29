@@ -1,11 +1,15 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from "vue"
+import { ref, onMounted } from "vue"
 import { useRoute, useRouter } from "vue-router"
 import { useAuthStore } from "@/stores/auth"
 import { listJobs } from "@/services/jobs"
 import ResultFilters from "@/components/results/ResultFilters.vue"
 import JobsTable from "@/components/results/JobsTable.vue"
 import BaseButton from "@/components/ui/BaseButton.vue"
+import BaseCard from "@/components/ui/BaseCard.vue"
+import AlertBanner from "@/components/ui/AlertBanner.vue"
+import PageHeader from "@/components/ui/PageHeader.vue"
+import TablePagination from "@/components/ui/TablePagination.vue"
 import type { JobResponse, JobsPage } from "@/types"
 
 const auth = useAuthStore()
@@ -26,7 +30,6 @@ const filters = ref({
 })
 
 onMounted(async () => {
-  // Read from URL query
   filters.value.search = (route.query.keyword as string) || ""
   filters.value.status = (route.query.status as string) || ""
   await loadJobs()
@@ -56,7 +59,6 @@ async function loadJobs() {
 function handleFilter(f: { search: string; status: string; user_id: string }) {
   filters.value = f
   page.value = 1
-  // Sync to URL
   router.replace({
     query: {
       ...(f.search && { keyword: f.search }),
@@ -66,55 +68,40 @@ function handleFilter(f: { search: string; status: string; user_id: string }) {
   loadJobs()
 }
 
-function prevPage() {
-  if (page.value > 1) {
-    page.value--
-    loadJobs()
-  }
-}
-
-function nextPage() {
-  if (page.value < totalPages.value) {
-    page.value++
-    loadJobs()
-  }
+function handlePageChange(newPage: number) {
+  page.value = newPage
+  loadJobs()
 }
 </script>
 
 <template>
   <div>
-    <div class="flex items-center justify-between mb-6">
-      <h2 class="text-xl font-bold text-gray-900">Results</h2>
-      <span class="text-sm text-gray-500">{{ total }} job(s)</span>
-    </div>
+    <PageHeader title="Results">
+      <template #actions>
+        <span class="text-sm text-gray-500">{{ total }} job(s)</span>
+      </template>
+    </PageHeader>
 
     <ResultFilters @filter="handleFilter" />
 
-    <!-- Error -->
-    <div v-if="error" class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+    <AlertBanner v-if="error" variant="error" class="mb-4">
       {{ error }}
       <BaseButton variant="secondary" size="sm" class="ml-2" @click="loadJobs">Retry</BaseButton>
-    </div>
+    </AlertBanner>
 
-    <!-- Jobs Table -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+    <BaseCard padding="p-0">
       <JobsTable
         :jobs="jobs"
         :loading="loading"
         :show-user="auth.isAdmin"
         @refresh="loadJobs"
       />
-    </div>
+    </BaseCard>
 
-    <!-- Pagination -->
-    <div v-if="totalPages > 1" class="flex items-center justify-center gap-4 mt-4">
-      <BaseButton variant="secondary" size="sm" :disabled="page <= 1" @click="prevPage">
-        Previous
-      </BaseButton>
-      <span class="text-sm text-gray-500">Page {{ page }} of {{ totalPages }}</span>
-      <BaseButton variant="secondary" size="sm" :disabled="page >= totalPages" @click="nextPage">
-        Next
-      </BaseButton>
-    </div>
+    <TablePagination
+      :current-page="page"
+      :total-pages="totalPages"
+      @page-change="handlePageChange"
+    />
   </div>
 </template>

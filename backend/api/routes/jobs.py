@@ -14,7 +14,7 @@ from api.models import (
     JobResponse,
     JobsPage,
 )
-from api.store import get_job, get_leads_by_job, list_jobs
+from api.store import delete_job, get_job, get_leads_by_job, list_jobs
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1/jobs", tags=["jobs"])
@@ -55,11 +55,14 @@ async def list_jobs_route(
 ):
     """GET /api/v1/jobs - List jobs with filters."""
     is_admin = request.state.user_role == "admin"
-    filter_uid = user_id if is_admin and user_id else (
-        None if is_admin else request.state.user_id
+    filter_uid = (
+        user_id
+        if is_admin and user_id
+        else (None if is_admin else request.state.user_id)
     )
-    return await list_jobs(db, user_id=filter_uid, status=status,
-                           keyword=keyword, page=page, limit=limit)
+    return await list_jobs(
+        db, user_id=filter_uid, status=status, keyword=keyword, page=page, limit=limit
+    )
 
 
 @router.get("/{job_id}", response_model=JobResponse)
@@ -95,6 +98,26 @@ async def cancel_job_route(
         raise HTTPException(403, "Access denied")
     manager = get_job_manager(request)
     await manager.cancel(job_id)
+    return {"success": True, "job_id": job_id}
+
+
+@router.delete("/{job_id}/delete")
+async def delete_job_route(
+    job_id: str,
+    request: Request,
+    user: dict = Depends(require_user),
+    db=Depends(get_db),
+):
+    """DELETE /api/v1/jobs/{id}/delete - Permanently delete job and leads."""
+    job = await get_job(db, job_id)
+    if job is None:
+        raise HTTPException(404, "Job not found")
+    is_admin = request.state.user_role == "admin"
+    if not is_admin and job["user_id"] != request.state.user_id:
+        raise HTTPException(403, "Access denied")
+    deleted = await delete_job(db, job_id)
+    if not deleted:
+        raise HTTPException(404, "Job not found")
     return {"success": True, "job_id": job_id}
 
 
