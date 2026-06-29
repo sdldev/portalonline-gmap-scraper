@@ -19,6 +19,7 @@ async def _get_store():
 
 
 async def cmd_list():
+    """List all users with their roles, active status, and API keys."""
     store = await _get_store()
     db = await store.init_db()
     users = await store.list_users(db)
@@ -36,6 +37,7 @@ async def cmd_list():
 
 
 async def cmd_create(username, role="user", api_key=None):
+    """Create a new user with the given username, role, and optional API key."""
     store = await _get_store()
     db = await store.init_db()
     user = await store.create_user(db, username, role=role, api_key=api_key)
@@ -45,6 +47,7 @@ async def cmd_create(username, role="user", api_key=None):
 
 
 async def cmd_delete(username):
+    """Delete a user by username."""
     store = await _get_store()
     db = await store.init_db()
     users = await store.list_users(db)
@@ -59,6 +62,7 @@ async def cmd_delete(username):
 
 
 async def cmd_seed():
+    """Seed the database with default admin and user accounts if they do not exist."""
     store = await _get_store()
     db = await store.init_db()
     users = await store.list_users(db)
@@ -85,6 +89,7 @@ async def cmd_seed():
 
 
 async def main():
+    """CLI entry point: parse subcommand and dispatch to the appropriate handler."""
     if len(sys.argv) < 2:
         print("Usage: python manage.py <cmd> [args]")
         print("  list              List all users")
