@@ -42,8 +42,7 @@ fi
 
 if [ $found_secrets -eq 1 ]; then
   echo "" >&2
-  echo "Please use environment variables (loaded via config.py / python-dotenv) instead of hardcoding secrets." >&2
-  # Do not block retroactively (PostToolUse can't block anyway, but outputs the error for context/bot fixing)
+  echo "Please use environment variables instead of hardcoding secrets in source code." >&2
 fi
 
 exit 0

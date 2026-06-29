@@ -5,8 +5,7 @@
       "hooks": [
         {
           "type": "command",
-          "command": "\"$DROID_PROJECT_DIR\"/.factory/hooks/protect-files.sh",
-          "timeout": 3
+          "command": "hooks/protect-files.sh"
         }
       ]
     }
@@ -17,23 +16,15 @@
       "hooks": [
         {
           "type": "command",
-          "command": "\"$DROID_PROJECT_DIR\"/.factory/hooks/format.sh",
-          "timeout": 15
+          "command": "hooks/format.sh"
         },
         {
           "type": "command",
-          "command": "\"$DROID_PROJECT_DIR\"/.factory/hooks/test-on-edit.sh",
-          "timeout": 60
+          "command": "hooks/test-on-edit.sh"
         },
         {
           "type": "command",
-          "command": "\"$DROID_PROJECT_DIR\"/.factory/hooks/scan-secrets.sh",
-          "timeout": 10
-        },
-        {
-          "type": "command",
-          "command": "\"$DROID_PROJECT_DIR\"/.factory/hooks/update-readme.sh",
-          "timeout": 5
+          "command": "hooks/scan-secrets.sh"
         }
       ]
     }
@@ -43,8 +34,7 @@
       "hooks": [
         {
           "type": "command",
-          "command": "python3 \"$DROID_PROJECT_DIR\"/.factory/hooks/docs-coverage.py",
-          "timeout": 10
+          "command": "hooks/docs-coverage.py"
         }
       ]
     }

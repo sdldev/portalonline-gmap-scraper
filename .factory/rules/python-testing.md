@@ -1,4 +1,4 @@
-# Testing Conventions
+# Python Testing Conventions (Backend)
 
 ## File Organization
 - Tests exist in the `tests/` directory
@@ -17,3 +17,4 @@
 
 ## Execution
 - Ensure 100% pass rate before committing: `pytest tests/ -v`
+- Run from project root: `.venv/bin/python -m pytest tests/ -v`

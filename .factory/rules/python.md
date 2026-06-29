@@ -1,35 +1,19 @@
-# Python Conventions
+# Python Conventions (Backend)
+
+For universal code quality rules (function length, file length, nesting limits, error handling, comments), see `code-quality.md`.
+
+## Naming
+- Variables and functions: `snake_case`
+- Classes: `PascalCase`
+- Constants: `UPPER_SNAKE_CASE`
+- Private functions/attributes: prefix `_` (e.g., `_helper_func`)
+- Booleans: prefix `is_`, `has_`, `should_`
 
 ## General
 - Python 3.12+ features are standard
 - Use modern type hinting (`str | None`, `list[int]`) instead of `typing` aliases
 - All external calls must have explicit timeouts
 - Use `pathlib.Path` over `os.path`
-
-## Code Length & Splitting (MANDATORY)
-- **Max 30 lines per function** — if more, split into smaller functions
-- **Max 400 lines per file** — if more, break into separate modules
-- **Max 5 parameters per function** — use dataclass/TypedDict if more
-- **Single responsibility per function** — one function, one job
-- **Never write long functions** — split logic into helper functions
-- **Split example:**
-  ```python
-  # ❌ BAD: 80-line function
-  async def process_data(data):
-      # validation 10 lines
-      # transform 20 lines
-      # save 15 lines
-      # notify 10 lines
-      # cleanup 10 lines
-
-  # ✅ GOOD: split into small functions
-  async def process_data(data):
-      validated = _validate_data(data)
-      transformed = _transform_data(validated)
-      await _save_to_db(transformed)
-      await _notify_users(transformed)
-      _cleanup_temp()
-  ```
 
 ## Asynchronous Code
 - Use `asyncio` patterns throughout
