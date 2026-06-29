@@ -16,6 +16,11 @@ def _progress_bar(pct: float, width: int = 20) -> str:
     return "█" * filled + "░" * (width - filled)
 
 
+def _is_test_file(filepath: str) -> bool:
+    """Check if a file is a test file (test_*.py or in tests/ directory)."""
+    return os.path.basename(filepath).startswith("test_") or "tests" in filepath.split(os.sep)
+
+
 def analyze_python_file(file_path: str) -> tuple[int, int]:
     """Return (total_functions, documented_functions) counts for a .py file."""
     with open(file_path) as f:
@@ -73,7 +78,8 @@ def main() -> None:
     if os.path.isdir(package_dir):
         total_functions = 0
         documented_functions = 0
-        file_stats: list[tuple[str, int, int]] = []  # (rel_path, total, documented)
+        test_functions = 0
+        file_stats: list[tuple[str, int, int]] = []
         skip_dirs = {"__pycache__", ".pytest_cache", ".venv", "venv", ".tox", "node_modules"}
         for root, dirs, files in os.walk(package_dir):
             dirs[:] = [d for d in dirs if d not in skip_dirs]
@@ -81,6 +87,9 @@ def main() -> None:
                 if file.endswith(".py"):
                     filepath = os.path.join(root, file)
                     t, d = analyze_python_file(filepath)
+                    if _is_test_file(filepath):
+                        test_functions += t
+                        continue
                     total_functions += t
                     documented_functions += d
                     if t > 0:
@@ -91,10 +100,12 @@ def main() -> None:
             coverage = (documented_functions / total_functions) * 100
             bar = _progress_bar(coverage)
             print(f"\n📊 Python Docstring Coverage Report")
-            print(f"   Package: backend")
+            print(f"   Package: backend (production code only)")
+            if test_functions > 0:
+                print(f"   Excluded: {test_functions} test functions across test files")
             print(f"   Coverage: {coverage:.1f}% [{bar}] {documented_functions}/{total_functions} documented")
 
-            # Per-file breakdown: show files with undocumented functions
+            # Per-file breakdown
             undocumented_files = [(p, t, d) for p, t, d in file_stats if d < t]
             if undocumented_files:
                 undocumented_files.sort(key=lambda x: x[1] - x[2], reverse=True)
