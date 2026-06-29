@@ -10,6 +10,12 @@ import re
 import sys
 
 
+def _progress_bar(pct: float, width: int = 20) -> str:
+    """Return a visual progress bar string for a percentage."""
+    filled = round(pct / 100 * width)
+    return "█" * filled + "░" * (width - filled)
+
+
 def analyze_python_file(file_path: str) -> tuple[int, int]:
     """Return (total_functions, documented_functions) counts for a .py file."""
     with open(file_path) as f:
@@ -67,32 +73,52 @@ def main() -> None:
     if os.path.isdir(package_dir):
         total_functions = 0
         documented_functions = 0
+        file_stats: list[tuple[str, int, int]] = []  # (rel_path, total, documented)
         skip_dirs = {"__pycache__", ".pytest_cache", ".venv", "venv", ".tox", "node_modules"}
         for root, dirs, files in os.walk(package_dir):
             dirs[:] = [d for d in dirs if d not in skip_dirs]
             for file in files:
                 if file.endswith(".py"):
-                    t, d = analyze_python_file(os.path.join(root, file))
+                    filepath = os.path.join(root, file)
+                    t, d = analyze_python_file(filepath)
                     total_functions += t
                     documented_functions += d
+                    if t > 0:
+                        rel = os.path.relpath(filepath, src_dir)
+                        file_stats.append((rel, t, d))
 
         if total_functions > 0:
             coverage = (documented_functions / total_functions) * 100
-            print("\n\U0001f4ca Python Docstring Coverage Report")
-            print("   Package: backend")
-            print(f"   Documented functions: {documented_functions}/{total_functions}")
-            print(f"   Coverage: {coverage:.1f}%")
+            bar = _progress_bar(coverage)
+            print(f"\n📊 Python Docstring Coverage Report")
+            print(f"   Package: backend")
+            print(f"   Coverage: {coverage:.1f}% [{bar}] {documented_functions}/{total_functions} documented")
+
+            # Per-file breakdown: show files with undocumented functions
+            undocumented_files = [(p, t, d) for p, t, d in file_stats if d < t]
+            if undocumented_files:
+                undocumented_files.sort(key=lambda x: x[1] - x[2], reverse=True)
+                print(f"\n   Files with undocumented functions ({len(undocumented_files)} files):")
+                for rel_path, total, documented in undocumented_files:
+                    missing = total - documented
+                    file_pct = (documented / total) * 100 if total else 0
+                    file_bar = _progress_bar(file_pct, width=10)
+                    print(f"   [{file_bar}] {rel_path} ({missing}/{total} undocumented)")
+            elif coverage >= 100:
+                print(f"\n   ✅  All functions are documented!")
+
+            # Severity message
             if coverage < 50:
-                print("\n  ⚠️  Low coverage. Consider adding docstrings to public functions.")
+                print(f"\n   ⚠️  Low coverage ({coverage:.0f}%). Add docstrings to public functions.")
             elif coverage < 80:
-                print("\n   ✓   Coverage is okay, but could be improved.")
+                print(f"\n   ✓   Coverage is okay ({coverage:.0f}%), but could be improved.")
             else:
-                print("\n   ✅  Excellent docstring coverage!")
+                print(f"\n   ✅  Excellent docstring coverage! ({coverage:.0f}%)")
 
     # --- Frontend: Component stats ---
     frontend_counts = analyze_frontend()
     if frontend_counts:
-        print("\n\U0001f4ca Frontend Component Stats")
+        print(f"\n📊 Frontend Component Stats")
         total = sum(frontend_counts.values())
         for folder, count in frontend_counts.items():
             print(f"   {folder}: {count}")
