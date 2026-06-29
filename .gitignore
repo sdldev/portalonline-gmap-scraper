@@ -25,7 +25,7 @@ build/
 .env
 *.csv
 logs/
-results/
+/results/
 scraped_data.csv
 
 # Testing / Tooling
@@ -37,5 +37,6 @@ htmlcov/
 # Sensitive User Data
 key.md
 *.key
+api_keys.txt
 
 data/

@@ -12,6 +12,7 @@ import SkeletonLoader from "@/components/ui/SkeletonLoader.vue"
 import GeneratePasswordModal from "@/components/users/GeneratePasswordModal.vue"
 import GenerateApiKeyModal from "@/components/users/GenerateApiKeyModal.vue"
 import { maskApiKey, relativeDate, copyToClipboard } from "@/utils/formatters"
+import { Eye, Pencil, KeyRound, Key, Trash2 } from "lucide-vue-next"
 import type { UserResponse } from "@/types"
 
 const router = useRouter()
@@ -113,11 +114,41 @@ async function confirmDeleteUser() {
               <td class="px-4 py-3 text-sm text-gray-500">{{ relativeDate(user.created_at) }}</td>
               <td class="px-4 py-3 text-right">
                 <div class="flex gap-1 justify-end">
-                  <BaseButton variant="ghost" size="sm" @click="router.push(`/users/${user.user_id}`)">View</BaseButton>
-                  <BaseButton variant="ghost" size="sm" @click="router.push(`/users/${user.user_id}/edit`)">Edit</BaseButton>
-                  <BaseButton variant="ghost" size="sm" @click="passwordUser = user; passwordModalOpen = true">Pwd</BaseButton>
-                  <BaseButton variant="ghost" size="sm" @click="apiKeyUser = user; apiKeyModalOpen = true">Key</BaseButton>
-                  <BaseButton variant="ghost" size="sm" @click="confirmUser = user; confirmOpen = true">Del</BaseButton>
+                  <button
+                    class="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                    title="View"
+                    @click="router.push(`/users/${user.user_id}`)"
+                  >
+                    <Eye :size="16" />
+                  </button>
+                  <button
+                    class="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                    title="Edit"
+                    @click="router.push(`/users/${user.user_id}/edit`)"
+                  >
+                    <Pencil :size="16" />
+                  </button>
+                  <button
+                    class="p-1.5 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded transition-colors"
+                    title="Generate Password"
+                    @click="passwordUser = user; passwordModalOpen = true"
+                  >
+                    <KeyRound :size="16" />
+                  </button>
+                  <button
+                    class="p-1.5 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded transition-colors"
+                    title="Regenerate API Key"
+                    @click="apiKeyUser = user; apiKeyModalOpen = true"
+                  >
+                    <Key :size="16" />
+                  </button>
+                  <button
+                    class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                    title="Delete"
+                    @click="confirmUser = user; confirmOpen = true"
+                  >
+                    <Trash2 :size="16" />
+                  </button>
                 </div>
               </td>
             </tr>
