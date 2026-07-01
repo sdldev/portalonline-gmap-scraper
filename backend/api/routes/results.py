@@ -72,7 +72,7 @@ async def export_results(
         raise HTTPException(400, "Admin export not supported via this endpoint")
     result = await get_leads_by_user(
         db, uid, keyword=keyword, job_id=job_id,
-        page=1, limit=100000,
+        page=1, limit=10000,
     )
     leads = result["results"]
 

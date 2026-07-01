@@ -7,7 +7,6 @@ from typing import Any
 
 import aiosqlite
 
-from scraper import scrape, scrape_smart
 from api.store import (
     cancel_job,
     create_job,
@@ -18,6 +17,7 @@ from api.store import (
     reindex_queue,
     update_job_status,
 )
+from scraper import scrape, scrape_smart
 
 logger = logging.getLogger(__name__)
 
@@ -53,8 +53,14 @@ class JobManager:
         queue_pos = await get_queue_position(self.db) if has_active else None
 
         job = await create_job(
-            self.db, user_id, keyword, location, query,
-            target=target, smart=smart, queue_position=queue_pos,
+            self.db,
+            user_id,
+            keyword,
+            location,
+            query,
+            target=target,
+            smart=smart,
+            queue_position=queue_pos,
         )
 
         await log_audit(self.db, user_id, "job.create", "job", job["job_id"])
@@ -100,7 +106,9 @@ class JobManager:
         except TimeoutError:
             logger.warning("Job %s timed out after %ds", job["job_id"], timeout)
             await update_job_status(
-                self.db, job["job_id"], "failed",
+                self.db,
+                job["job_id"],
+                "failed",
                 error=f"Job timed out after {timeout}s",
             )
             await log_audit(
@@ -108,13 +116,18 @@ class JobManager:
             )
         except asyncio.CancelledError:
             await update_job_status(
-                self.db, job["job_id"], "cancelled",
+                self.db,
+                job["job_id"],
+                "cancelled",
                 error="Job cancelled",
             )
         except Exception as e:
             logger.exception("Job %s failed", job["job_id"])
             await update_job_status(
-                self.db, job["job_id"], "failed", error=str(e),
+                self.db,
+                job["job_id"],
+                "failed",
+                error=f"Job failed: {type(e).__name__}",
             )
         finally:
             await self._dequeue_next()
@@ -150,8 +163,11 @@ class JobManager:
 
         inserted = await insert_leads_batch(self.db, leads)
         await update_job_status(
-            self.db, job["job_id"], "completed",
-            leads_collected=inserted, leads_total=len(results),
+            self.db,
+            job["job_id"],
+            "completed",
+            leads_collected=inserted,
+            leads_total=len(results),
         )
         await log_audit(self.db, job["user_id"], "job.complete", "job", job["job_id"])
 
@@ -188,9 +204,7 @@ class JobManager:
             stat = os.statvfs("data")
             usage = (1 - stat.f_bavail / stat.f_blocks) * 100
             if usage > limit:
-                raise RuntimeError(
-                    f"Disk usage {usage:.1f}% exceeds limit {limit}%"
-                )
+                raise RuntimeError(f"Disk usage {usage:.1f}% exceeds limit {limit}%")
         except FileNotFoundError:
             pass
 
@@ -206,6 +220,8 @@ class JobManager:
                 pass
         if self._active_job_id:
             await update_job_status(
-                self.db, self._active_job_id, "failed",
+                self.db,
+                self._active_job_id,
+                "failed",
                 error="Server shutting down",
             )

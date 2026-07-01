@@ -13,6 +13,36 @@ from api.store import get_job
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1", tags=["sse"])
 
+# Short-lived SSE tokens (single-use, 60s TTL)
+_sse_tokens: dict[str, float] = {}
+_SSE_TOKEN_TTL = 60
+
+
+@router.post('/jobs/{job_id}/stream-token')
+async def create_stream_token(
+    job_id: str,
+    request: Request,
+    user: dict = Depends(require_user),
+    db=Depends(get_db),
+):
+    """POST /api/v1/jobs/{id}/stream-token - Get a short-lived SSE token."""
+    import secrets
+    import time
+
+    job = await get_job(db, job_id)
+    if job is None:
+        raise HTTPException(404, 'Job not found')
+    is_admin = request.state.user_role == 'admin'
+    if not is_admin and job['user_id'] != request.state.user_id:
+        raise HTTPException(403, 'Access denied')
+
+    token = secrets.token_urlsafe(32)
+    _sse_tokens[token] = time.monotonic()
+    return {'token': token, 'expires_in': _SSE_TOKEN_TTL}
+
+
+
+
 
 async def _auth_sse(
     request: Request,
@@ -26,9 +56,19 @@ async def _auth_sse(
     user = None
 
     if token:
-        payload = verify_token(token)
-        if payload:
-            user = await get_user_by_id(db, payload["user_id"])
+        import time
+        # Check if it is a short-lived SSE token first
+        if token in _sse_tokens:
+            issued = _sse_tokens.pop(token)
+            if time.monotonic() - issued < _SSE_TOKEN_TTL:
+                # SSE token valid - still need user from auth header or API key
+                pass
+            else:
+                token = None  # expired
+        else:
+            payload = verify_token(token)
+            if payload:
+                user = await get_user_by_id(db, payload["user_id"])
 
     if user is None:
         auth_header = request.headers.get("Authorization", "")

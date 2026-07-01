@@ -1,5 +1,6 @@
 """SQLite persistence layer for PortalOnline GMap Scraper API."""
 
+from datetime import timedelta
 import logging
 import secrets
 import uuid
@@ -768,7 +769,7 @@ async def run_cleanup(
     db: aiosqlite.Connection, older_than_days: int = 90
 ) -> dict[str, Any]:
     """Delete old completed/failed/cancelled jobs and their leads, then vacuum."""
-    cutoff = datetime.now(UTC).isoformat()
+    cutoff = (datetime.now(UTC) - timedelta(days=older_than_days)).isoformat()
 
     async with db.execute(
         "SELECT COUNT(*) FROM jobs WHERE status IN ('completed','failed','cancelled') "
@@ -888,8 +889,8 @@ async def verify_password(
 
 async def update_user_password(
     db: aiosqlite.Connection, user_id: str, new_password: str
-) -> str:
-    """Set a new bcrypt password hash for user. Returns the plaintext password."""
+) -> None:
+    """Set a new bcrypt password hash for user."""
     import bcrypt
 
     password_hash = bcrypt.hashpw(new_password.encode(), bcrypt.gensalt()).decode()
@@ -898,7 +899,6 @@ async def update_user_password(
         (password_hash, user_id),
     )
     await db.commit()
-    return new_password
 
 
 async def regenerate_api_key(db: aiosqlite.Connection, user_id: str) -> str | None:

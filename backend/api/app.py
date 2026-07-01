@@ -111,13 +111,13 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
 
-    cors_origins = os.getenv("CORS_ORIGINS", "*")
+    cors_origins = os.getenv("CORS_ORIGINS", "")
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=cors_origins.split(","),
+        allow_origins=[o.strip() for o in cors_origins.split(",") if o.strip()],
         allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
+        allow_methods=["GET","POST","PUT","PATCH","DELETE","OPTIONS"],
+        allow_headers=["Authorization","X-API-Key","Content-Type"],
     )
 
     app.include_router(auth.router)

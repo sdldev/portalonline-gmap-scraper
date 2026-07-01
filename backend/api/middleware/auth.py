@@ -130,7 +130,7 @@ async def ensure_default_admin(db: aiosqlite.Connection) -> str:
     admin_key = os.getenv("ADMIN_API_KEY", "")
     if not admin_key:
         admin_key = f"admin_{os.urandom(16).hex()}"
-        logger.warning("ADMIN_API_KEY not set. Generated admin key: %s", admin_key)
+        logger.warning("ADMIN_API_KEY not set. Generated admin key: %s...%s", admin_key[:12], admin_key[-4:])
 
     admin = await create_user(db, "admin", role="admin", api_key=admin_key)
     logger.info("Default admin user created: %s", admin["user_id"])

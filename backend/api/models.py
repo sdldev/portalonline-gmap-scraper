@@ -65,6 +65,14 @@ class UserResponse(BaseModel):
     webhook_events: str | None = None
     created_at: str
 
+    @field_validator("api_key")
+    @classmethod
+    def mask_api_key(cls, v: str) -> str:
+        """Mask API key: show only last 4 chars."""
+        if len(v) > 8:
+            return f"****{v[-4:]}"
+        return "****"
+
 
 # --- Job Models ---
 
